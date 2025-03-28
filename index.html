@@ -12,6 +12,7 @@
             --dark: #1a1a2e;
             --light: #f8f9fa;
             --gray: #6c757d;
+            --light-gray: #e9ecef;
         }
 
         * {
@@ -34,6 +35,7 @@
             padding: 2rem;
         }
 
+        /* Ujednolicona nawigacja */
         header {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
@@ -49,7 +51,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 0 2rem;
         }
@@ -123,6 +125,11 @@
             transform: translateX(5px);
         }
 
+        .submenu-link.active {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
         .menu-toggle {
             display: none;
             cursor: pointer;
@@ -138,6 +145,7 @@
             transition: all 0.3s ease;
         }
 
+        /* Reszta stylów */
         h1 {
             text-align: center;
             margin: 2rem 0;
@@ -277,7 +285,7 @@
 <body>
     <header>
         <nav>
-            <a href="index.html" class="logo">Szkolna Liga Sportowa</a>
+            <a href="../index.html" class="logo">Szkolna Liga Sportowa</a>
             <div class="menu-toggle">
                 <span class="bar"></span>
                 <span class="bar"></span>
@@ -287,15 +295,17 @@
                 <li class="nav-item">
                     <a href="#" class="nav-link">Koszykówka</a>
                     <ul class="submenu">
-                        <li class="submenu-item"><a href="koszykowka/terminarz.html" class="submenu-link">Terminarz</a></li>
-                        <li class="submenu-item"><a href="koszykowka/zawodnicy.html" class="submenu-link">Zawodnicy</a></li>
+                        <li class="submenu-item"><a href="../koszykowka/wyniki.html" class="submenu-link">Wyniki</a></li>
+                        <li class="submenu-item"><a href="../koszykowka/terminarz.html" class="submenu-link">Terminarz</a></li>
+                        <li class="submenu-item"><a href="../koszykowka/zawodnicy.html" class="submenu-link">Zawodnicy</a></li>
                     </ul>
                 </li>
                 <li class="nav-item">
                     <a href="#" class="nav-link">Siatkówka</a>
                     <ul class="submenu">
-                        <li class="submenu-item"><a href="siatkowka/terminarz.html" class="submenu-link">Terminarz</a></li>
-                        <li class="submenu-item"><a href="siatkowka/zawodnicy.html" class="submenu-link">Zawodnicy</a></li>
+                        <li class="submenu-item"><a href="../siatkowka/wyniki.html" class="submenu-link">Wyniki</a></li>
+                        <li class="submenu-item"><a href="../siatkowka/terminarz.html" class="submenu-link">Terminarz</a></li>
+                        <li class="submenu-item"><a href="../siatkowka/zawodnicy.html" class="submenu-link">Zawodnicy</a></li>
                     </ul>
                 </li>
             </ul>

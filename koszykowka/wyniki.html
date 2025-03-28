@@ -2,10 +2,10 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Wyniki - Koszykówka</title>
     <style>
-                :root {
+        :root {
             --primary: #4361ee;
             --primary-light: #4895ef;
             --secondary: #3f37c9;
@@ -23,13 +23,12 @@
             box-sizing: border-box;
         }
     
-        /* Typografia i podstawowy layout */
         body {
             font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
             background-color: #f5f7ff;
             color: var(--dark);
             line-height: 1.6;
-            padding-top: 70px;
+            padding-top: 60px;
         }
     
         h1, h2, h3 {
@@ -39,14 +38,14 @@
     
         h1 {
             text-align: center;
-            margin-bottom: 2rem;
-            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
             background: linear-gradient(90deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             position: relative;
-            padding-bottom: 1rem;
+            padding-bottom: 0.8rem;
         }
     
         h1::after {
@@ -55,15 +54,15 @@
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 100px;
-            height: 4px;
+            width: 80px;
+            height: 3px;
             background: linear-gradient(90deg, var(--primary), var(--secondary));
             border-radius: 2px;
         }
     
         h2 {
             font-size: 1.5rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.2rem;
             color: var(--secondary);
         }
     
@@ -73,11 +72,10 @@
             color: var(--primary);
         }
     
-        /* Nagłówek i nawigacja */
         header {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            padding: 1rem 0;
+            padding: 0.8rem 0;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             position: fixed;
             width: 100%;
@@ -91,12 +89,12 @@
             align-items: center;
             max-width: 1400px;
             margin: 0 auto;
-            padding: 0 2rem;
+            padding: 0 1.5rem;
         }
     
         .logo {
             font-weight: 700;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: white;
             text-decoration: none;
         }
@@ -108,7 +106,7 @@
         }
     
         .nav-item {
-            margin: 0 1rem;
+            margin: 0 0.8rem;
             position: relative;
         }
     
@@ -116,15 +114,12 @@
             color: white;
             text-decoration: none;
             font-weight: 500;
-            padding: 0.5rem 1rem;
+            padding: 0.5rem 0.8rem;
             border-radius: 4px;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-        }
-    
-        .nav-link:hover, .nav-link.active {
-            background-color: rgba(255, 255, 255, 0.2);
+            font-size: 0.95rem;
         }
     
         .submenu {
@@ -132,7 +127,7 @@
             left: 0;
             top: 100%;
             background: white;
-            min-width: 200px;
+            min-width: 180px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.1);
             border-radius: 8px;
             opacity: 0;
@@ -156,67 +151,48 @@
             text-decoration: none;
             transition: all 0.2s ease;
             display: block;
+            font-size: 0.9rem;
         }
     
-        .submenu-link:hover {
-            color: var(--primary);
-            transform: translateX(5px);
-        }
-    
-        .submenu-link.active {
-            font-weight: 600;
-            color: var(--primary);
-        }
-    
-        /* Menu mobilne */
         .menu-toggle {
             display: none;
             cursor: pointer;
-            padding: 1rem;
+            padding: 0.8rem;
         }
     
         .bar {
             display: block;
-            width: 25px;
-            height: 3px;
-            margin: 5px auto;
+            width: 22px;
+            height: 2px;
+            margin: 4px auto;
             background-color: white;
             transition: all 0.3s ease;
         }
     
-        /* Główny kontener */
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 1.5rem;
         }
     
-        /* Karty */
         .card {
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
-            padding: 1.5rem;
-            margin-bottom: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            animation: fadeIn 0.5s ease forwards;
         }
     
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-        }
-    
-        /* Tabele ligowe */
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 1.5rem;
-            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
         }
     
         th, td {
-            padding: 12px 15px;
+            padding: 10px 12px;
             text-align: left;
             border-bottom: 1px solid var(--light-gray);
         }
@@ -226,7 +202,7 @@
             color: white;
             font-weight: 500;
             text-transform: uppercase;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             letter-spacing: 0.5px;
         }
     
@@ -247,124 +223,109 @@
             border-left: 3px solid var(--success);
         }
     
-        /* Drabinka pucharowa */
         .bracket-container {
             overflow-x: auto;
-            padding-bottom: 20px;
+            padding-bottom: 10px;
+            -webkit-overflow-scrolling: touch;
         }
     
         .bracket-table {
             margin: 0 auto;
             border-collapse: separate;
-            border-spacing: 15px 5px;
-            min-width: 800px;
+            border-spacing: 18px 5px;
+            min-width: 600px;
+        }
+
+        .submenu-link.active {
+            font-weight: 600;
+            color: var(--primary);
         }
     
         .round-header {
             text-align: center;
             font-weight: bold;
-            padding-bottom: 15px;
+            padding-bottom: 10px;
             color: var(--secondary);
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
     
         .match-cell {
             border: 1px solid var(--light-gray);
-            border-radius: 8px;
-            padding: 10px;
+            border-radius: 6px;
+            padding: 8px;
             background-color: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            min-width: 200px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            min-width: 160px;
             vertical-align: middle;
-            height: 80px;
-            box-sizing: border-box;
-            position: relative;
+            height: 70px;
         }
     
         .team {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px;
-            margin: 4px 0;
-            border-radius: 6px;
+            padding: 6px;
+            margin: 3px 0;
+            border-radius: 4px;
             transition: all 0.2s ease;
-            position: relative;
             background-color: #f9faff;
+            font-size: 0.85rem;
         }
     
         .team-name {
             flex-grow: 1;
-            padding-right: 10px;
+            padding-right: 8px;
             font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
     
         .team-points {
             font-weight: bold;
             color: var(--secondary);
-            min-width: 24px;
+            min-width: 20px;
             text-align: right;
             background-color: rgba(67, 97, 238, 0.1);
-            padding: 2px 6px;
-            border-radius: 12px;
-            font-size: 0.9em;
+            padding: 2px 5px;
+            border-radius: 10px;
+            font-size: 0.8em;
         }
     
         .winner {
             background-color: rgba(67, 97, 238, 0.1);
             font-weight: 500;
-            border-left: 3px solid var(--primary);
-        }
-    
-        .winner .team-points {
-            background-color: rgba(67, 97, 238, 0.2);
+            border-left: 2px solid var(--primary);
         }
     
         .final .match-cell {
             background-color: rgba(67, 97, 238, 0.08);
-            border: 2px solid var(--primary-light);
-            border-radius: 12px;
+            border: 1px solid var(--primary-light);
+            border-radius: 8px;
         }
     
         .final .team {
-            padding: 10px 12px;
+            padding: 8px 10px;
         }
     
         .final .team-name {
             font-weight: 600;
-            font-size: 1.1em;
-            color: var(--dark);
+            font-size: 0.9em;
         }
     
         .final .team-points {
-            font-size: 1em;
-            font-weight: 700;
-            padding: 3px 8px;
-            background-color: rgba(67, 97, 238, 0.2);
-        }
-    
-        .final .winner .team-name {
-            color: var(--secondary);
-            font-weight: 700;
-        }
-    
-        .final .winner .team-points {
-            background-color: var(--primary);
-            color: white;
-        }
-    
-        .connector {
-            position: relative;
+            font-size: 0.85em;
+            padding: 2px 6px;
         }
     
         .connector::after {
             content: '';
             position: absolute;
-            width: 15px;
+            width: 10px;
             height: 2px;
             background: var(--primary-light);
             top: 50%;
-            left: -15px;
+            left: -10px;
         }
     
         .connector::before {
@@ -374,73 +335,110 @@
             height: 100%;
             background: var(--primary-light);
             top: 0;
-            left: -15px;
+            left: -10px;
         }
     
-        .by-walkover {
-            font-style: italic;
-            color: var(--gray);
-        }
-    
-        /* Przyciski i komunikaty */
         .refresh-btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 2rem;
-            padding: 12px 24px;
+            margin: 0 auto 1.5rem;
+            padding: 10px 20px;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 500;
-            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
             transition: all 0.3s ease;
-        }
-    
-        .refresh-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.4);
-        }
-    
-        .refresh-btn:active {
-            transform: translateY(0);
         }
     
         .loading, .error {
             text-align: center;
-            padding: 2rem;
-            font-size: 1.1rem;
+            padding: 1.5rem;
+            font-size: 1rem;
         }
-    
-        .loading {
-            color: var(--gray);
+
+        .bracket-container {
+            overflow-x: auto;
+            padding-bottom: 10px;
+            -webkit-overflow-scrolling: touch;
         }
-    
-        .error {
-            color: var(--warning);
+
+        .bracket-table {
+            margin: 0 auto;
+            border-collapse: separate;
+            border-spacing: 18px 5px;
+            min-width: 600px;
         }
-    
-        /* Animacje */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        .match-cell {
+            position: relative;
+            border: 1px solid var(--light-gray);
+            border-radius: 6px;
+            padding: 8px;
+            background-color: white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            min-width: 160px;
+            vertical-align: middle;
+            height: 70px;
         }
-    
-        .card:nth-child(2) { animation-delay: 0.1s; }
-        .card:nth-child(3) { animation-delay: 0.2s; }
-        .card:nth-child(4) { animation-delay: 0.3s; }
-    
+
+
         /* Responsywność */
-        @media (max-width: 992px) {
+        @media (max-width: 768px) {
+            body {
+                padding-top: 56px;
+            }
+            
+            nav {
+                padding: 0 1rem;
+            }
+            
+            .container {
+                padding: 1.2rem;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+                margin-bottom: 1.2rem;
+            }
+            
+            .card {
+                padding: 1rem;
+                margin-bottom: 1.2rem;
+            }
+            
+            th, td {
+                padding: 8px 10px;
+                font-size: 0.85rem;
+            }
+            
+            .bracket-table {
+                min-width: 500px;
+                border-spacing: 8px 4px;
+            }
+            
+            .match-cell {
+                min-width: 140px;
+                height: 60px;
+            }
+            
+            .team {
+                font-size: 0.8rem;
+                padding: 5px;
+            }
+        }
+
+        @media (max-width: 576px) {
             .menu-toggle {
                 display: block;
             }
             
             .menu-toggle.active .bar:nth-child(1) {
-                transform: translateY(8px) rotate(45deg);
+                transform: translateY(6px) rotate(45deg);
             }
             
             .menu-toggle.active .bar:nth-child(2) {
@@ -448,19 +446,19 @@
             }
             
             .menu-toggle.active .bar:nth-child(3) {
-                transform: translateY(-8px) rotate(-45deg);
+                transform: translateY(-6px) rotate(-45deg);
             }
             
             .nav-menu {
                 position: fixed;
                 left: -100%;
-                top: 70px;
+                top: 56px;
                 flex-direction: column;
                 background: linear-gradient(135deg, var(--primary), var(--secondary));
                 width: 100%;
                 text-align: center;
                 transition: 0.3s;
-                padding: 1rem 0;
+                padding: 0.5rem 0;
             }
             
             .nav-menu.active {
@@ -468,7 +466,7 @@
             }
             
             .nav-item {
-                margin: 1rem 0;
+                margin: 0.5rem 0;
             }
             
             .submenu {
@@ -480,41 +478,84 @@
                 max-height: 0;
                 overflow: hidden;
                 transition: max-height 0.3s ease;
+                min-width: auto;
+                width: 80%;
+                margin: 0 auto;
             }
             
             .nav-item.active .submenu {
-                max-height: 500px;
+                max-height: 300px;
             }
             
             .submenu-item {
                 border-bottom: none;
-                padding: 0.5rem 0;
+                padding: 0.3rem 0;
             }
             
             .submenu-link {
                 color: white;
-                padding: 0.5rem;
-            }
-            
-            .submenu-link:hover {
-                transform: none;
-                background-color: rgba(255, 255, 255, 0.1);
+                padding: 0.3rem;
+                font-size: 0.85rem;
             }
             
             .container {
-                padding: 1.5rem;
+                padding: 1rem;
             }
             
             h1 {
-                font-size: 2rem;
+                font-size: 1.6rem;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+            }
+            
+            .refresh-btn {
+                width: 100%;
+                padding: 10px;
+            }
+            
+            .bracket-table {
+                min-width: 400px;
+            }
+            
+            .match-cell {
+                min-width: 120px;
+                height: 55px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            h1 {
+                font-size: 1.4rem;
+            }
+            
+            .container {
+                padding: 0.8rem;
             }
             
             .card {
-                padding: 1rem;
+                padding: 0.8rem;
             }
-    
+            
+            th, td {
+                padding: 6px 8px;
+                font-size: 0.8rem;
+            }
+            
             .bracket-table {
-                min-width: 600px;
+                min-width: 350px;
+                border-spacing: 6px 3px;
+            }
+            
+            .match-cell {
+                min-width: 110px;
+                height: 50px;
+                padding: 6px;
+            }
+            
+            .team {
+                font-size: 0.75rem;
             }
         }
     </style>
@@ -552,7 +593,7 @@
     <div class="container">
         <h1>Tabele - Koszykówka</h1>
         <button class="refresh-btn" onclick="loadData()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
                 <path d="M21.5 2v6h-6M2.5 22v-6h6M21.5 22a10 10 0 0 0-10-10 10 10 0 0 0-1.74.16M2.5 2a10 10 0 0 0 10 10 10 10 0 0 0 1.74-.16"></path>
             </svg>
             Odśwież dane
@@ -562,7 +603,6 @@
         
         <div id="tables-container"></div>
 
-        <!-- Drabinka pucharowa -->
         <div class="card">
             <h2>Drabinka Pucharowa</h2>
             <div id="bracket-loading" class="loading">Ładowanie drabinki...</div>
@@ -641,77 +681,29 @@
 
             // Pobieranie danych ćwierćfinałów
             const qfTeams = [
-                { // Drużyna 1 (bez walki)
-                    name: data[1]?.[0] || '...',
-                    points: data[1]?.[1] || '',
-                    winner: data[1]?.[2] === 'TRUE'
-                },
-                { // Drużyna 2
-                    name: data[4]?.[0] || '...',
-                    points: data[4]?.[1] || '',
-                    winner: data[4]?.[2] === 'TRUE'
-                },
-                { // Drużyna 3
-                    name: data[7]?.[0] || '...',
-                    points: data[7]?.[1] || '',
-                    winner: data[7]?.[2] === 'TRUE'
-                },
-                { // Drużyna 4
-                    name: data[9]?.[0] || '...',
-                    points: data[9]?.[1] || '',
-                    winner: data[9]?.[2] === 'TRUE'
-                },
-                { // Drużyna 5
-                    name: data[12]?.[0] || '...',
-                    points: data[12]?.[1] || '',
-                    winner: data[12]?.[2] === 'TRUE'
-                },
-                { // Drużyna 6
-                    name: data[15]?.[0] || '...',
-                    points: data[15]?.[1] || '',
-                    winner: data[15]?.[2] === 'TRUE'
-                }
+                { name: data[1]?.[0] || '...', points: data[1]?.[1] || '', winner: data[1]?.[2] === 'TRUE' },
+                { name: data[4]?.[0] || '...', points: data[4]?.[1] || '', winner: data[4]?.[2] === 'TRUE' },
+                { name: data[7]?.[0] || '...', points: data[7]?.[1] || '', winner: data[7]?.[2] === 'TRUE' },
+                { name: data[9]?.[0] || '...', points: data[9]?.[1] || '', winner: data[9]?.[2] === 'TRUE' },
+                { name: data[12]?.[0] || '...', points: data[12]?.[1] || '', winner: data[12]?.[2] === 'TRUE' },
+                { name: data[15]?.[0] || '...', points: data[15]?.[1] || '', winner: data[15]?.[2] === 'TRUE' }
             ];
 
             // Pobieranie danych półfinałów
             const sfTeams = [
-                { // Drużyna 1
-                    name: data[1]?.[4] || '...',
-                    points: data[1]?.[5] || '',
-                    winner: data[1]?.[6] === 'TRUE'
-                },
-                { // Drużyna 2
-                    name: data[6]?.[4] || '...',
-                    points: data[6]?.[5] || '',
-                    winner: data[6]?.[6] === 'TRUE'
-                },
-                { // Drużyna 3
-                    name: data[11]?.[4] || '...',
-                    points: data[11]?.[5] || '',
-                    winner: data[11]?.[6] === 'TRUE'
-                },
-                { // Drużyna 4
-                    name: data[15]?.[4] || '...',
-                    points: data[15]?.[5] || '',
-                    winner: data[15]?.[6] === 'TRUE'
-                }
+                { name: data[1]?.[4] || '...', points: data[1]?.[5] || '', winner: data[1]?.[6] === 'TRUE' },
+                { name: data[6]?.[4] || '...', points: data[6]?.[5] || '', winner: data[6]?.[6] === 'TRUE' },
+                { name: data[11]?.[4] || '...', points: data[11]?.[5] || '', winner: data[11]?.[6] === 'TRUE' },
+                { name: data[15]?.[4] || '...', points: data[15]?.[5] || '', winner: data[15]?.[6] === 'TRUE' }
             ];
 
             // Pobieranie danych finału
             const finalTeams = [
-                { // Drużyna 1
-                    name: data[3]?.[8] || '...',
-                    points: data[3]?.[9] || '',
-                    winner: data[3]?.[10] === 'TRUE'
-                },
-                { // Drużyna 2
-                    name: data[13]?.[8] || '...',
-                    points: data[13]?.[9] || '',
-                    winner: data[13]?.[10] === 'TRUE'
-                }
+                { name: data[3]?.[8] || '...', points: data[3]?.[9] || '', winner: data[3]?.[10] === 'TRUE' },
+                { name: data[13]?.[8] || '...', points: data[13]?.[9] || '', winner: data[13]?.[10] === 'TRUE' }
             ];
 
-            // Budowanie HTML drabinki
+            // Budowanie HTML drabinki z poprawionymi łącznikami
             const html = `
                 <!-- Rząd 1 -->
                 <tr>
@@ -720,8 +712,10 @@
                             <span class="team-name">${qfTeams[0].name}</span>
                             <span class="team-points">${qfTeams[0].points}</span>
                         </div>
+                      
+                       
                     </td>
-                    <td rowspan="2" class="match-cell connector">
+                    <td rowspan="2" class="match-cell">
                         <div class="team ${sfTeams[0].winner ? 'winner' : ''}">
                             <span class="team-name">${sfTeams[0].name}</span>
                             <span class="team-points">${sfTeams[0].points}</span>
@@ -730,8 +724,9 @@
                             <span class="team-name">${sfTeams[1].name}</span>
                             <span class="team-points">${sfTeams[1].points}</span>
                         </div>
+                         
                     </td>
-                    <td rowspan="4" class="match-cell final connector">
+                    <td rowspan="4" class="match-cell final">
                         <div class="team ${finalTeams[0].winner ? 'winner' : ''}">
                             <span class="team-name">${finalTeams[0].name}</span>
                             <span class="team-points">${finalTeams[0].points}</span>
@@ -740,6 +735,7 @@
                             <span class="team-name">${finalTeams[1].name}</span>
                             <span class="team-points">${finalTeams[1].points}</span>
                         </div>
+                        
                     </td>
                 </tr>
                 <!-- Rząd 2 -->
@@ -753,6 +749,8 @@
                             <span class="team-name">${qfTeams[2].name}</span>
                             <span class="team-points">${qfTeams[2].points}</span>
                         </div>
+             
+                  
                     </td>
                 </tr>
                 <!-- Rząd 3 -->
@@ -766,8 +764,10 @@
                             <span class="team-name">${qfTeams[4].name}</span>
                             <span class="team-points">${qfTeams[4].points}</span>
                         </div>
+            
+          
                     </td>
-                    <td rowspan="2" class="match-cell connector">
+                    <td rowspan="2" class="match-cell">
                         <div class="team ${sfTeams[2].winner ? 'winner' : ''}">
                             <span class="team-name">${sfTeams[2].name}</span>
                             <span class="team-points">${sfTeams[2].points}</span>
@@ -776,6 +776,9 @@
                             <span class="team-name">${sfTeams[3].name}</span>
                             <span class="team-points">${sfTeams[3].points}</span>
                         </div>
+                   
+                     
+     
                     </td>
                 </tr>
                 <!-- Rząd 4 -->
@@ -785,6 +788,8 @@
                             <span class="team-name">${qfTeams[5].name}</span>
                             <span class="team-points">${qfTeams[5].points}</span>
                         </div>
+                
+         
                     </td>
                 </tr>
             `;
@@ -820,7 +825,7 @@
         function displayGroupedData(data) {
             if (!data || data.length === 0) {
                 document.getElementById('error').style.display = 'block';
-                document.getElementById('error').textContent = '... tabeli do wyświetlenia';
+                document.getElementById('error').textContent = 'Brak tabeli do wyświetlenia';
                 return;
             }
 
@@ -880,6 +885,7 @@
                 if (index !== groupColumnIndex) {
                     const th = document.createElement('th');
                     th.textContent = headerText;
+                    if (index === 6) th.style.textAlign = 'center';
                     headerRow.appendChild(th);
                 }
             });
@@ -899,9 +905,7 @@
                 rowData.forEach((cellText, cellIndex) => {
                     if (cellIndex !== groupColumnIndex) {
                         const td = document.createElement('td');
-                        if (cellIndex === 6) {
-                            td.style.textAlign = 'center';
-                        }
+                        if (cellIndex === 6) td.style.textAlign = 'center';
                         td.textContent = cellText;
                         row.appendChild(td);
                     }
