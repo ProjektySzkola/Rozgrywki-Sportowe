@@ -280,12 +280,26 @@
                 background-color: rgba(255, 255, 255, 0.1);
             }
         }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-img {
+            height: 50px;
+        }
     </style>
 </head>
 <body>
     <header>
         <nav>
-            <a href="../index.html" class="logo">Szkolna Liga Sportowa</a>
+            <div class="logo-container">
+                <img src="../cropped-logo-1.png" alt="Logo szkoły" class="logo-img">
+                <a href="../index.html" class="logo">Szkolna Liga Sportowa</a>
+            </div>
+
             <div class="menu-toggle">
                 <span class="bar"></span>
                 <span class="bar"></span>
@@ -307,6 +321,19 @@
                         <li class="submenu-item"><a href="../siatkowka/terminarz.html" class="submenu-link">Terminarz</a></li>
                         <li class="submenu-item"><a href="../siatkowka/zawodnicy.html" class="submenu-link">Zawodnicy</a></li>
                     </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a href="#" class="nav-link">Piłka nożna</a>
+                    <ul class="submenu">
+                        <li class="submenu-item"><a href="../pilka_nozna/wyniki.html" class="submenu-link">Wyniki</a></li>
+                        <li class="submenu-item"><a href="../pilka_nozna/terminarz.html" class="submenu-link">Terminarz</a></li>
+                        <li class="submenu-item"><a href="../pilka_nozna/zawodnicy.html" class="submenu-link">Zawodnicy</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a href="../dokumenty.html" class="nav-link">Dokumenty</a>
                 </li>
             </ul>
         </nav>
@@ -339,6 +366,17 @@
                     <a href="siatkowka/zawodnicy.html" class="sport-link">Zawodnicy</a>
                 </div>
             </div>
+
+            <div class="sport-card">
+                <div class="sport-icon">⚽</div>
+                <h2 class="sport-title">Piłka nożna</h2>
+                <div class="sport-links">
+                    <a href="pilka_nozna/wyniki.html" class="sport-link">Wyniki</a>
+                    <a href="pilka_nozna/terminarz.html" class="sport-link">Terminarz</a>
+                    <a href="pilka_nozna/zawodnicy.html" class="sport-link">Zawodnicy</a>
+                </div>
+            </div>
+
         </div>
     </div>
 
