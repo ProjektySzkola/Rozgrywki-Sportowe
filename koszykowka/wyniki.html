@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wyniki - Koszykówka</title>
+    <style>
+                :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3f37c9;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+        }
+    
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+    
+        /* Typografia i podstawowy layout */
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background-color: #f5f7ff;
+            color: var(--dark);
+            line-height: 1.6;
+            padding-top: 70px;
+        }
+    
+        h1, h2, h3 {
+            color: var(--dark);
+            font-weight: 600;
+        }
+    
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+            padding-bottom: 1rem;
+        }
+    
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+    
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+        }
+    
+        h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+    
+        /* Nagłówek i nawigacja */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+    
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+    
+        .logo {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: white;
+            text-decoration: none;
+        }
+    
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            position: relative;
+        }
+    
+        .nav-item {
+            margin: 0 1rem;
+            position: relative;
+        }
+    
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+    
+        .nav-link:hover, .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+    
+        .submenu {
+            position: absolute;
+            left: 0;
+            top: 100%;
+            background: white;
+            min-width: 200px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+    
+        .nav-item:hover .submenu {
+            opacity: 1;
+            visibility: visible;
+        }
+    
+        .submenu-item {
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+    
+        .submenu-link {
+            color: var(--dark);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: block;
+        }
+    
+        .submenu-link:hover {
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+    
+        .submenu-link.active {
+            font-weight: 600;
+            color: var(--primary);
+        }
+    
+        /* Menu mobilne */
+        .menu-toggle {
+            display: none;
+            cursor: pointer;
+            padding: 1rem;
+        }
+    
+        .bar {
+            display: block;
+            width: 25px;
+            height: 3px;
+            margin: 5px auto;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+    
+        /* Główny kontener */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+    
+        /* Karty */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeIn 0.5s ease forwards;
+        }
+    
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+    
+        /* Tabele ligowe */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+    
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--light-gray);
+        }
+    
+        th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+    
+        tr:nth-child(even) {
+            background-color: rgba(67, 97, 238, 0.03);
+        }
+    
+        tr:hover {
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+    
+        .top-three {
+            background-color: rgba(76, 201, 240, 0.1) !important;
+            font-weight: 500;
+        }
+    
+        .top-three td:first-child {
+            border-left: 3px solid var(--success);
+        }
+    
+        /* Drabinka pucharowa */
+        .bracket-container {
+            overflow-x: auto;
+            padding-bottom: 20px;
+        }
+    
+        .bracket-table {
+            margin: 0 auto;
+            border-collapse: separate;
+            border-spacing: 15px 5px;
+            min-width: 800px;
+        }
+    
+        .round-header {
+            text-align: center;
+            font-weight: bold;
+            padding-bottom: 15px;
+            color: var(--secondary);
+            font-size: 1.1rem;
+        }
+    
+        .match-cell {
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            padding: 10px;
+            background-color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            min-width: 200px;
+            vertical-align: middle;
+            height: 80px;
+            box-sizing: border-box;
+            position: relative;
+        }
+    
+        .team {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            margin: 4px 0;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            position: relative;
+            background-color: #f9faff;
+        }
+    
+        .team-name {
+            flex-grow: 1;
+            padding-right: 10px;
+            font-weight: 500;
+        }
+    
+        .team-points {
+            font-weight: bold;
+            color: var(--secondary);
+            min-width: 24px;
+            text-align: right;
+            background-color: rgba(67, 97, 238, 0.1);
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 0.9em;
+        }
+    
+        .winner {
+            background-color: rgba(67, 97, 238, 0.1);
+            font-weight: 500;
+            border-left: 3px solid var(--primary);
+        }
+    
+        .winner .team-points {
+            background-color: rgba(67, 97, 238, 0.2);
+        }
+    
+        .final .match-cell {
+            background-color: rgba(67, 97, 238, 0.08);
+            border: 2px solid var(--primary-light);
+            border-radius: 12px;
+        }
+    
+        .final .team {
+            padding: 10px 12px;
+        }
+    
+        .final .team-name {
+            font-weight: 600;
+            font-size: 1.1em;
+            color: var(--dark);
+        }
+    
+        .final .team-points {
+            font-size: 1em;
+            font-weight: 700;
+            padding: 3px 8px;
+            background-color: rgba(67, 97, 238, 0.2);
+        }
+    
+        .final .winner .team-name {
+            color: var(--secondary);
+            font-weight: 700;
+        }
+    
+        .final .winner .team-points {
+            background-color: var(--primary);
+            color: white;
+        }
+    
+        .connector {
+            position: relative;
+        }
+    
+        .connector::after {
+            content: '';
+            position: absolute;
+            width: 15px;
+            height: 2px;
+            background: var(--primary-light);
+            top: 50%;
+            left: -15px;
+        }
+    
+        .connector::before {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 100%;
+            background: var(--primary-light);
+            top: 0;
+            left: -15px;
+        }
+    
+        .by-walkover {
+            font-style: italic;
+            color: var(--gray);
+        }
+    
+        /* Przyciski i komunikaty */
+        .refresh-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+            transition: all 0.3s ease;
+        }
+    
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.4);
+        }
+    
+        .refresh-btn:active {
+            transform: translateY(0);
+        }
+    
+        .loading, .error {
+            text-align: center;
+            padding: 2rem;
+            font-size: 1.1rem;
+        }
+    
+        .loading {
+            color: var(--gray);
+        }
+    
+        .error {
+            color: var(--warning);
+        }
+    
+        /* Animacje */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    
+        .card:nth-child(2) { animation-delay: 0.1s; }
+        .card:nth-child(3) { animation-delay: 0.2s; }
+        .card:nth-child(4) { animation-delay: 0.3s; }
+    
+        /* Responsywność */
+        @media (max-width: 992px) {
+            .menu-toggle {
+                display: block;
+            }
+            
+            .menu-toggle.active .bar:nth-child(1) {
+                transform: translateY(8px) rotate(45deg);
+            }
+            
+            .menu-toggle.active .bar:nth-child(2) {
+                opacity: 0;
+            }
+            
+            .menu-toggle.active .bar:nth-child(3) {
+                transform: translateY(-8px) rotate(-45deg);
+            }
+            
+            .nav-menu {
+                position: fixed;
+                left: -100%;
+                top: 70px;
+                flex-direction: column;
+                background: linear-gradient(135deg, var(--primary), var(--secondary));
+                width: 100%;
+                text-align: center;
+                transition: 0.3s;
+                padding: 1rem 0;
+            }
+            
+            .nav-menu.active {
+                left: 0;
+            }
+            
+            .nav-item {
+                margin: 1rem 0;
+            }
+            
+            .submenu {
+                position: static;
+                opacity: 1;
+                visibility: visible;
+                background: transparent;
+                box-shadow: none;
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease;
+            }
+            
+            .nav-item.active .submenu {
+                max-height: 500px;
+            }
+            
+            .submenu-item {
+                border-bottom: none;
+                padding: 0.5rem 0;
+            }
+            
+            .submenu-link {
+                color: white;
+                padding: 0.5rem;
+            }
+            
+            .submenu-link:hover {
+                transform: none;
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+            
+            .container {
+                padding: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .card {
+                padding: 1rem;
+            }
+    
+            .bracket-table {
+                min-width: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="../index.html" class="logo">Szkolna Liga Sportowa</a>
+            <div class="menu-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">Koszykówka</a>
+                    <ul class="submenu">
+                        <li class="submenu-item"><a href="../koszykowka/wyniki.html" class="submenu-link active">Wyniki</a></li>
+                        <li class="submenu-item"><a href="../koszykowka/terminarz.html" class="submenu-link">Terminarz</a></li>
+                        <li class="submenu-item"><a href="../koszykowka/zawodnicy.html" class="submenu-link">Zawodnicy</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">Siatkówka</a>
+                    <ul class="submenu">
+                        <li class="submenu-item"><a href="../siatkowka/wyniki.html" class="submenu-link">Wyniki</a></li>
+                        <li class="submenu-item"><a href="../siatkowka/terminarz.html" class="submenu-link">Terminarz</a></li>
+                        <li class="submenu-item"><a href="../siatkowka/zawodnicy.html" class="submenu-link">Zawodnicy</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1>Tabele - Koszykówka</h1>
+        <button class="refresh-btn" onclick="loadData()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                <path d="M21.5 2v6h-6M2.5 22v-6h6M21.5 22a10 10 0 0 0-10-10 10 10 0 0 0-1.74.16M2.5 2a10 10 0 0 0 10 10 10 10 0 0 0 1.74-.16"></path>
+            </svg>
+            Odśwież dane
+        </button>
+        <div id="loading" class="loading">Ładowanie danych...</div>
+        <div id="error" class="error" style="display: none;"></div>
+        
+        <div id="tables-container"></div>
+
+        <!-- Drabinka pucharowa -->
+        <div class="card">
+            <h2>Drabinka Pucharowa</h2>
+            <div id="bracket-loading" class="loading">Ładowanie drabinki...</div>
+            <div id="bracket-error" class="error" style="display: none;"></div>
+            <div id="bracket-container" class="bracket-container" style="display: none;">
+                <table class="bracket-table">
+                    <thead>
+                        <tr>
+                            <th class="round-header">Ćwierćfinały</th>
+                            <th class="round-header">Półfinały</th>
+                            <th class="round-header">Finał</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bracket-body">
+                        <!-- Dane będą wstawiane dynamicznie -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SPREADSHEET_ID = '15q06r0qd-UE8Wna1tRJxlQ2biZz-PIPxNntGX4uQC0w';
+        const TABLE_RANGE = 'Dane_Strona!A:G';
+        const BRACKET_RANGE = 'Dane_Strona!S2:AD20';
+        
+        function loadData() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('tables-container').innerHTML = '';
+
+            const tableUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${TABLE_RANGE.split('!')[0]}&range=${TABLE_RANGE.split('!')[1]}`;
+            
+            fetch(tableUrl)
+            .then(response => response.text())
+            .then(tableData => {
+                document.getElementById('loading').style.display = 'none';
+                const tableArray = csvToArray(tableData);
+                displayGroupedData(tableArray);
+                loadBracketData();
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = 'Wystąpił błąd: ' + error.message;
+                console.error('Error:', error);
+            });
+        }
+
+        function loadBracketData() {
+            document.getElementById('bracket-loading').style.display = 'block';
+            document.getElementById('bracket-error').style.display = 'none';
+            document.getElementById('bracket-container').style.display = 'none';
+
+            const bracketUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${BRACKET_RANGE.split('!')[0]}&range=${BRACKET_RANGE.split('!')[1]}`;
+            
+            fetch(bracketUrl)
+            .then(response => response.text())
+            .then(bracketData => {
+                document.getElementById('bracket-loading').style.display = 'none';
+                const bracketArray = csvToArray(bracketData);
+                displayBracket(bracketArray);
+                document.getElementById('bracket-container').style.display = 'block';
+            })
+            .catch(error => {
+                document.getElementById('bracket-loading').style.display = 'none';
+                document.getElementById('bracket-error').style.display = 'block';
+                document.getElementById('bracket-error').textContent = 'Wystąpił błąd przy ładowaniu drabinki: ' + error.message;
+                console.error('Bracket Error:', error);
+            });
+        }
+
+        function displayBracket(data) {
+            const bracketBody = document.getElementById('bracket-body');
+            bracketBody.innerHTML = '';
+
+            // Pobieranie danych ćwierćfinałów
+            const qfTeams = [
+                { // Drużyna 1 (bez walki)
+                    name: data[1]?.[0] || '...',
+                    points: data[1]?.[1] || '',
+                    winner: data[1]?.[2] === 'TRUE'
+                },
+                { // Drużyna 2
+                    name: data[4]?.[0] || '...',
+                    points: data[4]?.[1] || '',
+                    winner: data[4]?.[2] === 'TRUE'
+                },
+                { // Drużyna 3
+                    name: data[7]?.[0] || '...',
+                    points: data[7]?.[1] || '',
+                    winner: data[7]?.[2] === 'TRUE'
+                },
+                { // Drużyna 4
+                    name: data[9]?.[0] || '...',
+                    points: data[9]?.[1] || '',
+                    winner: data[9]?.[2] === 'TRUE'
+                },
+                { // Drużyna 5
+                    name: data[12]?.[0] || '...',
+                    points: data[12]?.[1] || '',
+                    winner: data[12]?.[2] === 'TRUE'
+                },
+                { // Drużyna 6
+                    name: data[15]?.[0] || '...',
+                    points: data[15]?.[1] || '',
+                    winner: data[15]?.[2] === 'TRUE'
+                }
+            ];
+
+            // Pobieranie danych półfinałów
+            const sfTeams = [
+                { // Drużyna 1
+                    name: data[1]?.[4] || '...',
+                    points: data[1]?.[5] || '',
+                    winner: data[1]?.[6] === 'TRUE'
+                },
+                { // Drużyna 2
+                    name: data[6]?.[4] || '...',
+                    points: data[6]?.[5] || '',
+                    winner: data[6]?.[6] === 'TRUE'
+                },
+                { // Drużyna 3
+                    name: data[11]?.[4] || '...',
+                    points: data[11]?.[5] || '',
+                    winner: data[11]?.[6] === 'TRUE'
+                },
+                { // Drużyna 4
+                    name: data[15]?.[4] || '...',
+                    points: data[15]?.[5] || '',
+                    winner: data[15]?.[6] === 'TRUE'
+                }
+            ];
+
+            // Pobieranie danych finału
+            const finalTeams = [
+                { // Drużyna 1
+                    name: data[3]?.[8] || '...',
+                    points: data[3]?.[9] || '',
+                    winner: data[3]?.[10] === 'TRUE'
+                },
+                { // Drużyna 2
+                    name: data[13]?.[8] || '...',
+                    points: data[13]?.[9] || '',
+                    winner: data[13]?.[10] === 'TRUE'
+                }
+            ];
+
+            // Budowanie HTML drabinki
+            const html = `
+                <!-- Rząd 1 -->
+                <tr>
+                    <td class="match-cell">
+                        <div class="team ${qfTeams[0].winner ? 'winner' : ''}">
+                            <span class="team-name">${qfTeams[0].name}</span>
+                            <span class="team-points">${qfTeams[0].points}</span>
+                        </div>
+                    </td>
+                    <td rowspan="2" class="match-cell connector">
+                        <div class="team ${sfTeams[0].winner ? 'winner' : ''}">
+                            <span class="team-name">${sfTeams[0].name}</span>
+                            <span class="team-points">${sfTeams[0].points}</span>
+                        </div>
+                        <div class="team ${sfTeams[1].winner ? 'winner' : ''}">
+                            <span class="team-name">${sfTeams[1].name}</span>
+                            <span class="team-points">${sfTeams[1].points}</span>
+                        </div>
+                    </td>
+                    <td rowspan="4" class="match-cell final connector">
+                        <div class="team ${finalTeams[0].winner ? 'winner' : ''}">
+                            <span class="team-name">${finalTeams[0].name}</span>
+                            <span class="team-points">${finalTeams[0].points}</span>
+                        </div>
+                        <div class="team ${finalTeams[1].winner ? 'winner' : ''}">
+                            <span class="team-name">${finalTeams[1].name}</span>
+                            <span class="team-points">${finalTeams[1].points}</span>
+                        </div>
+                    </td>
+                </tr>
+                <!-- Rząd 2 -->
+                <tr>
+                    <td class="match-cell">
+                        <div class="team ${qfTeams[1].winner ? 'winner' : ''}">
+                            <span class="team-name">${qfTeams[1].name}</span>
+                            <span class="team-points">${qfTeams[1].points}</span>
+                        </div>
+                        <div class="team ${qfTeams[2].winner ? 'winner' : ''}">
+                            <span class="team-name">${qfTeams[2].name}</span>
+                            <span class="team-points">${qfTeams[2].points}</span>
+                        </div>
+                    </td>
+                </tr>
+                <!-- Rząd 3 -->
+                <tr>
+                    <td class="match-cell">
+                        <div class="team ${qfTeams[3].winner ? 'winner' : ''}">
+                            <span class="team-name">${qfTeams[3].name}</span>
+                            <span class="team-points">${qfTeams[3].points}</span>
+                        </div>
+                        <div class="team ${qfTeams[4].winner ? 'winner' : ''}">
+                            <span class="team-name">${qfTeams[4].name}</span>
+                            <span class="team-points">${qfTeams[4].points}</span>
+                        </div>
+                    </td>
+                    <td rowspan="2" class="match-cell connector">
+                        <div class="team ${sfTeams[2].winner ? 'winner' : ''}">
+                            <span class="team-name">${sfTeams[2].name}</span>
+                            <span class="team-points">${sfTeams[2].points}</span>
+                        </div>
+                        <div class="team ${sfTeams[3].winner ? 'winner' : ''}">
+                            <span class="team-name">${sfTeams[3].name}</span>
+                            <span class="team-points">${sfTeams[3].points}</span>
+                        </div>
+                    </td>
+                </tr>
+                <!-- Rząd 4 -->
+                <tr>
+                    <td class="match-cell">
+                        <div class="team ${qfTeams[5].winner ? 'winner' : ''}">
+                            <span class="team-name">${qfTeams[5].name}</span>
+                            <span class="team-points">${qfTeams[5].points}</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+
+            bracketBody.innerHTML = html;
+        }
+
+        function csvToArray(csvText) {
+            const lines = csvText.split('\n');
+            return lines.map(line => {
+                const values = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(current);
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                
+                values.push(current);
+                return values;
+            });
+        }
+
+        function displayGroupedData(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = '... tabeli do wyświetlenia';
+                return;
+            }
+
+            const headers = data[0];
+            const groupColumnIndex = headers.findIndex(header => 
+                header.trim().toLowerCase() === 'grupa');
+            
+            if (groupColumnIndex === -1) {
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = 'Nie znaleziono kolumny "Grupa"';
+                return;
+            }
+
+            const pointsColumnIndex = 6;
+            const groups = {};
+            for (let i = 1; i < data.length; i++) {
+                const row = data[i];
+                if (row.length <= groupColumnIndex) continue;
+                
+                const groupName = row[groupColumnIndex].trim();
+                if (!groupName) continue;
+                
+                if (!groups[groupName]) {
+                    groups[groupName] = [];
+                }
+                groups[groupName].push(row);
+            }
+
+            const groupNames = Object.keys(groups);
+            groupNames.forEach(groupName => {
+                const groupData = groups[groupName];
+                
+                groupData.sort((a, b) => {
+                    const pointsA = parseFloat(a[pointsColumnIndex]) || 0;
+                    const pointsB = parseFloat(b[pointsColumnIndex]) || 0;
+                    return pointsB - pointsA;
+                });
+
+                createGroupTable(groupName, groupData, headers, document.getElementById('tables-container'), groupColumnIndex);
+            });
+        }
+
+        function createGroupTable(groupName, groupData, headers, container, groupColumnIndex) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            
+            const groupTitle = document.createElement('h3');
+            groupTitle.textContent = groupName;
+            card.appendChild(groupTitle);
+
+            const table = document.createElement('table');
+            
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            
+            headers.forEach((headerText, index) => {
+                if (index !== groupColumnIndex) {
+                    const th = document.createElement('th');
+                    th.textContent = headerText;
+                    headerRow.appendChild(th);
+                }
+            });
+            
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+            
+            const tbody = document.createElement('tbody');
+            
+            groupData.forEach((rowData, rowIndex) => {
+                const row = document.createElement('tr');
+                
+                if (rowIndex < 3) {
+                    row.classList.add('top-three');
+                }
+                
+                rowData.forEach((cellText, cellIndex) => {
+                    if (cellIndex !== groupColumnIndex) {
+                        const td = document.createElement('td');
+                        if (cellIndex === 6) {
+                            td.style.textAlign = 'center';
+                        }
+                        td.textContent = cellText;
+                        row.appendChild(td);
+                    }
+                });
+                
+                tbody.appendChild(row);
+            });
+            
+            table.appendChild(tbody);
+            card.appendChild(table);
+            container.appendChild(card);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const navMenu = document.querySelector('.nav-menu');
+            
+            menuToggle.addEventListener('click', function() {
+                this.classList.toggle('active');
+                navMenu.classList.toggle('active');
+            });
+            
+            if (window.innerWidth <= 992) {
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    const link = item.querySelector('.nav-link');
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        item.classList.toggle('active');
+                    });
+                });
+            }
+            
+            loadData();
+        });
+    </script>
+</body>
+</html>
