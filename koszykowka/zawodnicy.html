@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Zawodnicy - Koszykówka</title>
+    <link rel="stylesheet" href="../navigation.css">
     <style>
         :root {
             --primary: #4361ee;
@@ -28,109 +29,7 @@
             background-color: #f5f7ff;
             color: var(--dark);
             line-height: 1.6;
-            padding-top: 60px;
-        }
-
-        header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 0.8rem 0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-        }
-
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-        }
-
-        .submenu-link.active {
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        .logo {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: white;
-            text-decoration: none;
-        }
-
-        .nav-menu {
-            display: flex;
-            list-style: none;
-            position: relative;
-        }
-
-        .nav-item {
-            margin: 0 0.8rem;
-            position: relative;
-        }
-
-        .nav-link {
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            padding: 0.5rem 0.8rem;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            font-size: 0.95rem;
-        }
-
-        .submenu {
-            position: absolute;
-            left: 0;
-            top: 100%;
-            background: white;
-            min-width: 180px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .nav-item:hover .submenu {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .submenu-item {
-            padding: 0.5rem 1rem;
-            border-bottom: 1px solid var(--light-gray);
-        }
-
-        .submenu-link {
-            color: var(--dark);
-            text-decoration: none;
-            transition: all 0.2s ease;
-            display: block;
-            font-size: 0.9rem;
-        }
-
-        .menu-toggle {
-            display: none;
-            cursor: pointer;
-            padding: 0.8rem;
-        }
-
-        .bar {
-            display: block;
-            width: 22px;
-            height: 2px;
-            margin: 4px auto;
-            background-color: white;
-            transition: all 0.3s ease;
+            padding-top: 80px;
         }
 
         .container {
@@ -275,11 +174,7 @@
         /* Responsywność */
         @media (max-width: 768px) {
             body {
-                padding-top: 56px;
-            }
-            
-            nav {
-                padding: 0 1rem;
+                padding-top: 70px;
             }
             
             .container {
@@ -308,69 +203,8 @@
         }
 
         @media (max-width: 576px) {
-            .menu-toggle {
-                display: block;
-            }
-            
-            .menu-toggle.active .bar:nth-child(1) {
-                transform: translateY(6px) rotate(45deg);
-            }
-            
-            .menu-toggle.active .bar:nth-child(2) {
-                opacity: 0;
-            }
-            
-            .menu-toggle.active .bar:nth-child(3) {
-                transform: translateY(-6px) rotate(-45deg);
-            }
-            
-            .nav-menu {
-                position: fixed;
-                left: -100%;
-                top: 56px;
-                flex-direction: column;
-                background: linear-gradient(135deg, var(--primary), var(--secondary));
-                width: 100%;
-                text-align: center;
-                transition: 0.3s;
-                padding: 0.5rem 0;
-            }
-            
-            .nav-menu.active {
-                left: 0;
-            }
-            
-            .nav-item {
-                margin: 0.5rem 0;
-            }
-            
-            .submenu {
-                position: static;
-                opacity: 1;
-                visibility: visible;
-                background: transparent;
-                box-shadow: none;
-                max-height: 0;
-                overflow: hidden;
-                transition: max-height 0.3s ease;
-                min-width: auto;
-                width: 80%;
-                margin: 0 auto;
-            }
-            
-            .nav-item.active .submenu {
-                max-height: 300px;
-            }
-            
-            .submenu-item {
-                border-bottom: none;
-                padding: 0.3rem 0;
-            }
-            
-            .submenu-link {
-                color: white;
-                padding: 0.3rem;
-                font-size: 0.85rem;
+            body {
+                padding-top: 65px;
             }
             
             .container {
@@ -409,62 +243,10 @@
                 padding: 2px 5px;
             }
         }
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .logo-img {
-            height: 50px;
-        }
     </style>
 </head>
 <body>
-    <header>
-        <nav>
-            <div class="logo-container">
-                <img src="../cropped-logo-1.png" alt="Logo szkoły" class="logo-img">
-                <a href="../index.html" class="logo">Szkolna Liga Sportowa</a>
-            </div>
-            <div class="menu-toggle">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </div>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="#" class="nav-link">Koszykówka</a>
-                    <ul class="submenu">
-                        <li class="submenu-item"><a href="../koszykowka/wyniki.html" class="submenu-link">Wyniki</a></li>
-                        <li class="submenu-item"><a href="../koszykowka/terminarz.html" class="submenu-link">Terminarz</a></li>
-                        <li class="submenu-item"><a href="../koszykowka/zawodnicy.html" class="submenu-link active">Zawodnicy</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">Siatkówka</a>
-                    <ul class="submenu">
-                        <li class="submenu-item"><a href="../siatkowka/wyniki.html" class="submenu-link">Wyniki</a></li>
-                        <li class="submenu-item"><a href="../siatkowka/terminarz.html" class="submenu-link">Terminarz</a></li>
-                        <li class="submenu-item"><a href="../siatkowka/zawodnicy.html" class="submenu-link">Zawodnicy</a></li>
-                    </ul>
-                </li>
-
-                <li class="nav-item">
-                    <a href="#" class="nav-link">Piłka nożna</a>
-                    <ul class="submenu">
-                        <li class="submenu-item"><a href="../pilka_nozna/wyniki.html" class="submenu-link">Wyniki</a></li>
-                        <li class="submenu-item"><a href="../pilka_nozna/terminarz.html" class="submenu-link">Terminarz</a></li>
-                        <li class="submenu-item"><a href="../pilka_nozna/zawodnicy.html" class="submenu-link">Zawodnicy</a></li>
-                    </ul>
-                </li>
-
-                <li class="nav-item">
-                    <a href="../dokumenty.html" class="nav-link">Dokumenty</a>
-                </li>
-            </ul>
-        </nav>
-    </header>
+    <script src="../navigation.js"></script>
 
     <div class="container">
         <h1>Zawodnicy - Koszykówka</h1>
@@ -486,6 +268,7 @@
         const SPREADSHEET_ID = '15q06r0qd-UE8Wna1tRJxlQ2biZz-PIPxNntGX4uQC0w';
         const PLAYERS_RANGE = 'zawodnicy_kosz!A:R';
         
+        // Funkcja do ładowania danych
         function loadData() {
             document.getElementById('loading').style.display = 'block';
             document.getElementById('error').style.display = 'none';
@@ -508,6 +291,7 @@
                 });
         }
 
+        // Funkcja do konwersji CSV na tablicę
         function csvToArray(csvText) {
             const lines = csvText.split('\n');
             return lines.map(line => {
@@ -533,6 +317,7 @@
             });
         }
 
+        // Funkcja do wyświetlania danych zawodników
         function displayPlayersData(data) {
             if (!data || data.length === 0) {
                 document.getElementById('error').style.display = 'block';
@@ -563,6 +348,7 @@
                 return;
             }
 
+            // Sortowanie zawodników według punktów
             players.sort((a, b) => {
                 const pointsA = parseFloat(a[totalIndex]) || 0;
                 const pointsB = parseFloat(b[totalIndex]) || 0;
@@ -573,6 +359,7 @@
             
             const table = document.createElement('table');
             
+            // Nagłówek tabeli
             const thead = document.createElement('thead');
             const headerRow = document.createElement('tr');
             
@@ -588,6 +375,7 @@
             thead.appendChild(headerRow);
             table.appendChild(thead);
             
+            // Zawartość tabeli
             const tbody = document.createElement('tbody');
             
             players.forEach((player, index) => {
@@ -596,19 +384,23 @@
                     row.classList.add('top-player');
                 }
                 
+                // Pozycja
                 const positionCell = document.createElement('td');
                 positionCell.textContent = index + 1;
                 row.appendChild(positionCell);
                 
+                // Imię i nazwisko
                 const nameCell = document.createElement('td');
                 nameCell.className = 'player-name';
                 nameCell.textContent = `${player[firstNameIndex]} ${player[lastNameIndex]}`;
                 row.appendChild(nameCell);
                 
+                // Klasa
                 const classCell = document.createElement('td');
                 classCell.textContent = classIndex !== -1 ? player[classIndex] : '-';
                 row.appendChild(classCell);
                 
+                // Punkty z gier
                 gameColumns.forEach(gameCol => {
                     const gameCell = document.createElement('td');
                     gameCell.className = 'game-points';
@@ -616,6 +408,7 @@
                     row.appendChild(gameCell);
                 });
                 
+                // Suma punktów
                 const totalCell = document.createElement('td');
                 totalCell.className = 'total-points';
                 totalCell.style.textAlign = 'center';
@@ -632,25 +425,8 @@
             container.appendChild(table);
         }
 
+        // Ładowanie danych po załadowaniu DOM
         document.addEventListener('DOMContentLoaded', function() {
-            const menuToggle = document.querySelector('.menu-toggle');
-            const navMenu = document.querySelector('.nav-menu');
-            
-            menuToggle.addEventListener('click', function() {
-                this.classList.toggle('active');
-                navMenu.classList.toggle('active');
-            });
-            
-            if (window.innerWidth <= 992) {
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    const link = item.querySelector('.nav-link');
-                    link.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        item.classList.toggle('active');
-                    });
-                });
-            }
-            
             loadData();
         });
     </script>
