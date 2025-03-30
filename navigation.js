@@ -63,6 +63,7 @@ function loadNavigation() {
                         <ul class="navigation-submenu">
                             <li class="navigation-subitem" data-page="wyniki"><a href="../siatkowka/wyniki.html" class="navigation-sublink">Wyniki</a></li>
                             <li class="navigation-subitem" data-page="terminarz"><a href="../siatkowka/terminarz.html" class="navigation-sublink">Terminarz</a></li>
+
                         </ul>
                     </li>
                     
