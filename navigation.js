@@ -38,7 +38,7 @@ function loadNavigation() {
         <div class="navigation-container">
             <div class="navigation-logo-container">
                 <img src="../cropped-logo-1.png" alt="Logo szkoły" class="navigation-logo-img">
-                <a href="../index.html" class="navigation-logo">Szkolna Liga Sportowa</a>
+                <a href="../extra/index.html" class="navigation-logo">Szkolna Liga Sportowa</a>
             </div>
             
             <button class="navigation-toggle" aria-label="Menu" aria-expanded="false">
@@ -68,7 +68,7 @@ function loadNavigation() {
                     </li>
                     
                     <li class="navigation-item" data-page="dokumenty">
-                        <a href="../dokumenty.html" class="navigation-link">Dokumenty</a>
+                        <a href="../extra/dokumenty.html" class="navigation-link">Dokumenty</a>
                     </li>
                 </ul>
             </div>
@@ -82,7 +82,7 @@ function loadNavigation() {
     // Załaduj CSS
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = './navigation.css';
+    link.href = '../navigation.css';
     document.head.appendChild(link);
 
     // Funkcja do ustawiania aktywnych elementów

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Szkolna Liga Sportowa</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3f37c9;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background-color: #f5f7ff;
+            color: var(--dark);
+            line-height: 1.6;
+            padding-top: 70px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Ujednolicona nawigacja */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            position: relative;
+        }
+
+        .nav-item {
+            margin: 0 1rem;
+            position: relative;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .submenu {
+            position: absolute;
+            left: 0;
+            top: 100%;
+            background: white;
+            min-width: 200px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .nav-item:hover .submenu {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .submenu-item {
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .submenu-link {
+            color: var(--dark);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: block;
+        }
+
+        .submenu-link:hover {
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .submenu-link.active {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .menu-toggle {
+            display: none;
+            cursor: pointer;
+            padding: 1rem;
+        }
+
+        .bar {
+            display: block;
+            width: 25px;
+            height: 3px;
+            margin: 5px auto;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+
+        /* Reszta stylów */
+        h1 {
+            text-align: center;
+            margin: 2rem 0;
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .welcome-section {
+            text-align: center;
+            margin: 3rem 0;
+        }
+
+        .sport-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .sport-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .sport-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .sport-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .sport-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+
+        .sport-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .sport-link {
+            padding: 0.5rem;
+            background: rgba(67, 97, 238, 0.1);
+            border-radius: 6px;
+            color: var(--primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .sport-link:hover {
+            background: rgba(67, 97, 238, 0.2);
+        }
+
+        @media (max-width: 992px) {
+            .menu-toggle {
+                display: block;
+            }
+            
+            .menu-toggle.active .bar:nth-child(1) {
+                transform: translateY(8px) rotate(45deg);
+            }
+            
+            .menu-toggle.active .bar:nth-child(2) {
+                opacity: 0;
+            }
+            
+            .menu-toggle.active .bar:nth-child(3) {
+                transform: translateY(-8px) rotate(-45deg);
+            }
+            
+            .nav-menu {
+                position: fixed;
+                left: -100%;
+                top: 70px;
+                flex-direction: column;
+                background: linear-gradient(135deg, var(--primary), var(--secondary));
+                width: 100%;
+                text-align: center;
+                transition: 0.3s;
+                padding: 1rem 0;
+            }
+            
+            .nav-menu.active {
+                left: 0;
+            }
+            
+            .nav-item {
+                margin: 1rem 0;
+            }
+            
+            .submenu {
+                position: static;
+                opacity: 1;
+                visibility: visible;
+                background: transparent;
+                box-shadow: none;
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease;
+            }
+            
+            .nav-item.active .submenu {
+                max-height: 500px;
+            }
+            
+            .submenu-item {
+                border-bottom: none;
+                padding: 0.5rem 0;
+            }
+            
+            .submenu-link {
+                color: white;
+                padding: 0.5rem;
+            }
+            
+            .submenu-link:hover {
+                transform: none;
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-img {
+            height: 50px;
+        }
+
+       
+    </style>
+</head>
+<body>
+    <!-- <header> -->
+        <!-- <nav> -->
+            <!-- <div class="logo-container">
+                <img src="./cropped-logo-1.png" alt="Logo szkoły" class="logo-img">
+                <a href="./extra/index.html" class="logo">Szkolna Liga Sportowa</a>
+            </div>
+
+            <div class="menu-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">Koszykówka</a>
+                    <ul class="submenu">
+                        <li class="submenu-item"><a href="./koszykowka/wyniki.html" class="submenu-link">Wyniki</a></li>
+                        <li class="submenu-item"><a href="./koszykowka/terminarz.html" class="submenu-link">Terminarz</a></li>
+                        <li class="submenu-item"><a href="./koszykowka/zawodnicy.html" class="submenu-link">Zawodnicy</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">Siatkówka</a>
+                    <ul class="submenu">
+                        <li class="submenu-item"><a href="./siatkowka/wyniki.html" class="submenu-link">Wyniki</a></li>
+                        <li class="submenu-item"><a href="./siatkowka/terminarz.html" class="submenu-link">Terminarz</a></li>
+                        <li class="submenu-item"><a href="./siatkowka/zawodnicy.html" class="submenu-link">Zawodnicy</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a href="#" class="nav-link">Piłka nożna</a>
+                    <ul class="submenu">
+                        <li class="submenu-item"><a href="./pilka_nozna/wyniki.html" class="submenu-link">Wyniki</a></li>
+                        <li class="submenu-item"><a href="./pilka_nozna/terminarz.html" class="submenu-link">Terminarz</a></li>
+                        <li class="submenu-item"><a href="./pilka_nozna/zawodnicy.html" class="submenu-link">Zawodnicy</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a href="./extra/dokumenty.html" class="nav-link">Dokumenty</a>
+                </li>
+            </ul>
+        </nav> -->
+    <!-- </header> -->
+
+    <script src="./navigation.js"></script>
+
+    <div class="container">
+        <h1>Witamy w systemie Szkolnej Ligi Sportowej</h1>
+        
+        <div class="welcome-section">
+            <p>Wybierz dyscyplinę sportową, aby zobaczyć szczegółowe statystyki</p>
+        </div>
+
+        <div class="sport-grid">
+            <div class="sport-card">
+                <div class="sport-icon">🏀</div>
+                <h2 class="sport-title">Koszykówka</h2>
+                <div class="sport-links">
+                    <a href="koszykowka/wyniki.html" class="sport-link">Wyniki</a>
+                    <a href="koszykowka/terminarz.html" class="sport-link">Terminarz</a>
+                    <a href="koszykowka/zawodnicy.html" class="sport-link">Zawodnicy</a>
+                </div>
+            </div>
+            
+            <div class="sport-card">
+                <div class="sport-icon">🏐</div>
+                <h2 class="sport-title">Siatkówka</h2>
+                <div class="sport-links">
+                    <a href="siatkowka/wyniki.html" class="sport-link">Wyniki</a>
+                    <a href="siatkowka/terminarz.html" class="sport-link">Terminarz</a>
+                    <a href="siatkowka/zawodnicy.html" class="sport-link">Zawodnicy</a>
+                </div>
+            </div>
+
+            <div class="sport-card">
+                <div class="sport-icon">⚽</div>
+                <h2 class="sport-title">Piłka nożna</h2>
+                <div class="sport-links">
+                    <a href="pilka_nozna/wyniki.html" class="sport-link">Wyniki</a>
+                    <a href="pilka_nozna/terminarz.html" class="sport-link">Terminarz</a>
+                    <a href="pilka_nozna/zawodnicy.html" class="sport-link">Zawodnicy</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const navMenu = document.querySelector('.nav-menu');
+            
+            menuToggle.addEventListener('click', function() {
+                this.classList.toggle('active');
+                navMenu.classList.toggle('active');
+            });
+            
+            if (window.innerWidth <= 992) {
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    const link = item.querySelector('.nav-link');
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        item.classList.toggle('active');
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

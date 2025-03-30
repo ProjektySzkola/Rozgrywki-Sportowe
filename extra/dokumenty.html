@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dokumenty - Szkolna Liga Sportowa</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3f37c9;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+        }
+    
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+    
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background-color: #f5f7ff;
+            color: var(--dark);
+            line-height: 1.6;
+            padding-top: 60px;
+        }
+    
+        h1, h2, h3 {
+            color: var(--dark);
+            font-weight: 600;
+        }
+    
+        h1 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+            padding-bottom: 0.8rem;
+        }
+    
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+    
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.2rem;
+            color: var(--secondary);
+        }
+    
+        h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+    
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 0.8rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+    
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+    
+        .logo {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: white;
+            text-decoration: none;
+        }
+    
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            position: relative;
+        }
+    
+        .nav-item {
+            margin: 0 0.8rem;
+            position: relative;
+        }
+    
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 0.8rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+    
+        .submenu {
+            position: absolute;
+            left: 0;
+            top: 100%;
+            background: white;
+            min-width: 180px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+    
+        .nav-item:hover .submenu {
+            opacity: 1;
+            visibility: visible;
+        }
+    
+        .submenu-item {
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+    
+        .submenu-link {
+            color: var(--dark);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: block;
+            font-size: 0.9rem;
+        }
+    
+        .menu-toggle {
+            display: none;
+            cursor: pointer;
+            padding: 0.8rem;
+        }
+    
+        .bar {
+            display: block;
+            width: 22px;
+            height: 2px;
+            margin: 4px auto;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+    
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+    
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+    
+        /* Style dla dokumentów */
+        .documents-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .document-card {
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .document-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .document-icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.8rem;
+        }
+        
+        .document-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+        
+        .document-description {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            flex-grow: 1;
+        }
+        
+        .document-actions {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: auto;
+            padding-top: 1rem;
+        }
+        
+        .document-download {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            flex: 1;
+            justify-content: center;
+        }
+        
+        .document-preview {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            background-color: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            flex: 1;
+            justify-content: center;
+        }
+        
+        .document-download:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+        
+        .document-preview:hover {
+            background-color: var(--light-gray);
+            transform: translateY(-2px);
+        }
+        
+        .document-download svg,
+        .document-preview svg {
+            margin-right: 8px;
+        }
+        
+        /* Responsywność */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 56px;
+            }
+            
+            nav {
+                padding: 0 1rem;
+            }
+            
+            .container {
+                padding: 1.2rem;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+                margin-bottom: 1.2rem;
+            }
+            
+            .card {
+                padding: 1rem;
+                margin-bottom: 1.2rem;
+            }
+            
+            .documents-container {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+
+        @media (max-width: 576px) {
+            .menu-toggle {
+                display: block;
+            }
+            
+            .menu-toggle.active .bar:nth-child(1) {
+                transform: translateY(6px) rotate(45deg);
+            }
+            
+            .menu-toggle.active .bar:nth-child(2) {
+                opacity: 0;
+            }
+            
+            .menu-toggle.active .bar:nth-child(3) {
+                transform: translateY(-6px) rotate(-45deg);
+            }
+            
+            .nav-menu {
+                position: fixed;
+                left: -100%;
+                top: 56px;
+                flex-direction: column;
+                background: linear-gradient(135deg, var(--primary), var(--secondary));
+                width: 100%;
+                text-align: center;
+                transition: 0.3s;
+                padding: 0.5rem 0;
+            }
+            
+            .nav-menu.active {
+                left: 0;
+            }
+            
+            .nav-item {
+                margin: 0.5rem 0;
+            }
+            
+            .submenu {
+                position: static;
+                opacity: 1;
+                visibility: visible;
+                background: transparent;
+                box-shadow: none;
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease;
+                min-width: auto;
+                width: 80%;
+                margin: 0 auto;
+            }
+            
+            .nav-item.active .submenu {
+                max-height: 300px;
+            }
+            
+            .submenu-item {
+                border-bottom: none;
+                padding: 0.3rem 0;
+            }
+            
+            .submenu-link {
+                color: white;
+                padding: 0.3rem;
+                font-size: 0.85rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 1.6rem;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+            }
+            
+            h3 {
+                font-size: 1.1rem;
+            }
+            
+            .documents-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .document-actions {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 400px) {
+            h1 {
+                font-size: 1.4rem;
+            }
+            
+            .container {
+                padding: 0.8rem;
+            }
+            
+            .card {
+                padding: 0.8rem;
+            }
+        }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-img {
+            height: 50px;
+        }
+
+      
+        
+    </style>
+</head>
+<body>
+    <!-- <header> -->
+        <!-- <nav>
+            <div class="logo-container">
+                <img src="./cropped-logo-1.png" alt="Logo szkoły" class="logo-img">
+                <a href="./extra/index.html" class="logo">Szkolna Liga Sportowa</a>
+            </div>
+            <div class="menu-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">Koszykówka</a>
+                    <ul class="submenu">
+                        <li class="submenu-item"><a href="./koszykowka/wyniki.html" class="submenu-link">Wyniki</a></li>
+                        <li class="submenu-item"><a href="./koszykowka/terminarz.html" class="submenu-link">Terminarz</a></li>
+                        <li class="submenu-item"><a href="./koszykowka/zawodnicy.html" class="submenu-link">Zawodnicy</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">Siatkówka</a>
+                    <ul class="submenu">
+                        <li class="submenu-item"><a href="./siatkowka/wyniki.html" class="submenu-link">Wyniki</a></li>
+                        <li class="submenu-item"><a href="./siatkowka/terminarz.html" class="submenu-link">Terminarz</a></li>
+                        <li class="submenu-item"><a href="./siatkowka/zawodnicy.html" class="submenu-link">Zawodnicy</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a href="#" class="nav-link">Piłka nożna</a>
+                    <ul class="submenu">
+                        <li class="submenu-item"><a href="./pilka_nozna/wyniki.html" class="submenu-link">Wyniki</a></li>
+                        <li class="submenu-item"><a href="./pilka_nozna/terminarz.html" class="submenu-link">Terminarz</a></li>
+                        <li class="submenu-item"><a href="./pilka_nozna/zawodnicy.html" class="submenu-link">Zawodnicy</a></li>
+                    </ul>
+                </li>
+
+                
+                <li class="nav-item">
+                    <a href="./dokumenty.html" class="nav-link">Dokumenty</a>
+                </li>
+            </ul>
+        </nav> -->
+    <!-- </header> -->
+
+    <script src="./navigation.js"></script>
+
+    <div class="container">
+        <h1>Dokumenty do pobrania</h1>
+        
+        <div class="card">
+            <h2>Dostępne dokumenty</h2>
+            <div class="documents-container">
+                <!-- Dokument 1 -->
+                <div class="document-card">
+                    <div class="document-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </div>
+                    <h3 class="document-title">Regulamin zawodów</h3>
+                    <p class="document-description">Oficjalny regulamin Szkolnej Ligi Sportowej</p>
+                    <div class="document-actions">
+                        <a href="https://drive.google.com/file/d/1MCSArvrDw7Kjr0wP3mXHqwFZTiVbukGe/view" class="document-preview" target="_blank">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            Podgląd
+                        </a>
+                        <a href="https://drive.google.com/uc?export=download&id=1MCSArvrDw7Kjr0wP3mXHqwFZTiVbukGe" class="document-download" target="_blank">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Pobierz
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Dokument 2 -->
+                <div class="document-card">
+                    <div class="document-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </div>
+                    <h3 class="document-title">Dokumenty dla Pełnoletniego</h3>
+                    <p class="document-description">Dokument do zgłoszenia zawodnika pełnoletniego do turnieju. Klauzula RODO oraz zgoda na uczestnictwo.</p>
+                    <div class="document-actions">
+                        <a href="https://drive.google.com/file/d/1UehcYBNa-CstDqRWPKRV0w5nPlv5awVg/view" class="document-preview" target="_blank">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            Podgląd
+                        </a>
+                        <a href="https://drive.google.com/uc?export=download&id=1UehcYBNa-CstDqRWPKRV0w5nPlv5awVg" class="document-download" target="_blank">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Pobierz
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Dokument 3 -->
+                <div class="document-card">
+                    <div class="document-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </div>
+                    <h3 class="document-title">Dokumenty dla niepełnoletniego</h3>
+                    <p class="document-description">Dokument do zgłoszenia zawodnika niepełnoletniego do turnieju. Klauzula RODO oraz zgoda na uczestnictwo.</p>
+                    <div class="document-actions">
+                        <a href="https://drive.google.com/file/d/1YJ8v6sf1uH5805nRVgPcH3RV0iz4vuAv/view" class="document-preview" target="_blank">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            Podgląd
+                        </a>
+                        <a href="https://drive.google.com/uc?export=download&id=1YJ8v6sf1uH5805nRVgPcH3RV0iz4vuAv" class="document-download" target="_blank">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Pobierz
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const navMenu = document.querySelector('.nav-menu');
+            
+            menuToggle.addEventListener('click', function() {
+                this.classList.toggle('active');
+                navMenu.classList.toggle('active');
+            });
+            
+            if (window.innerWidth <= 992) {
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    const link = item.querySelector('.nav-link');
+                    link.addEventListener('click', (e) => {
+                        if (link.getAttribute('href') === '#') {
+                            e.preventDefault();
+                            item.classList.toggle('active');
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
