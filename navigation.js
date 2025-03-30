@@ -82,7 +82,7 @@ function loadNavigation() {
     // Załaduj CSS
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = '../navigation.css';
+    link.href = './navigation.css';
     document.head.appendChild(link);
 
     // Funkcja do ustawiania aktywnych elementów
