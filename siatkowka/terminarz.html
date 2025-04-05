@@ -312,7 +312,7 @@
 
     <script>
         const SPREADSHEET_ID = '15q06r0qd-UE8Wna1tRJxlQ2biZz-PIPxNntGX4uQC0w';
-        const SCHEDULE_RANGE = 'Dane_Strona_Siatka!L:S'; // Zakres danych dla siatkówki
+        const SCHEDULE_RANGE = 'Dane_Strona_Siatka!L:U'; // Zakres danych dla siatkówki
         
         function loadData() {
             document.getElementById('loading').style.display = 'block';
@@ -372,14 +372,16 @@
             container.innerHTML = '';
 
             const headers = data[0];
-            const dateIndex = 0;
-            const timeIndex = 1;
-            const team1Index = 2;
-            const sets1Index = 3; // Sety dla Team 1
-            const sets2Index = 4; // Sety dla Team 2
-            const pointsIndex = 5; // Punkty w setach
-            const team2Index = 6;
-            const courtIndex = 7;
+            const dateIndex = 0; // Kolumna L - Data
+            const timeIndex = 1; // Kolumna M - Godzina
+            const team1ClassIndex = 2; // Kolumna N - klasa team 1
+            const team1NameIndex = 3; // Kolumna O - Team 1
+            const sets1Index = 4; // Kolumna P - Sety dla Team 1
+            const sets2Index = 5; // Kolumna Q - Sety dla Team 2
+            const pointsIndex = 6; // Kolumna R - Punkty w setach
+            const team2NameIndex = 7; // Kolumna S - Team 2
+            const team2ClassIndex = 8; // Kolumna T - klasa team 2
+            const courtIndex = 9; // Kolumna U - Boisko
 
             const matchesByDate = {};
             for (let i = 1; i < data.length; i++) {
@@ -429,10 +431,12 @@
                     const matchDiv = document.createElement('div');
                     matchDiv.className = 'match-container';
                     
-                    // Team 1
+                    // Team 1 - format: "numer klasy - nazwa drużyny"
                     const team1Div = document.createElement('div');
                     team1Div.className = 'team home';
-                    team1Div.textContent = match[team1Index];
+                    const team1Class = match[team1ClassIndex] || '';
+                    const team1Name = match[team1NameIndex] || '';
+                    team1Div.textContent = team1Class && team1Name ? `${team1Class} - ${team1Name}` : team1Name;
                     matchDiv.appendChild(team1Div);
                     
                     // Score container
@@ -462,10 +466,12 @@
                     
                     matchDiv.appendChild(scoreDiv);
                     
-                    // Team 2
+                    // Team 2 - format: "numer klasy - nazwa drużyny"
                     const team2Div = document.createElement('div');
                     team2Div.className = 'team away';
-                    team2Div.textContent = match[team2Index];
+                    const team2Class = match[team2ClassIndex] || '';
+                    const team2Name = match[team2NameIndex] || '';
+                    team2Div.textContent = team2Class && team2Name ? `${team2Class} - ${team2Name}` : team2Name;
                     matchDiv.appendChild(team2Div);
                     
                     // Match info (time and court)
