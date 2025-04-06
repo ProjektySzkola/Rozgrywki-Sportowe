@@ -659,12 +659,13 @@
                     return pointsB - pointsA;
                 });
 
-                createGroupTable(groupName, groupData, headers, document.getElementById('tables-container'), groupColumnIndex);
+                createGroupTable(groupName, groupData, headers, document.getElementById('tables-container'), groupColumnIndex, groupNames);
+
             });
         }
 
         // Funkcja do tworzenia tabeli grupy
-        function createGroupTable(groupName, groupData, headers, container, groupColumnIndex) {
+        function createGroupTable(groupName, groupData, headers, container, groupColumnIndex, groupNames) {
             const card = document.createElement('div');
             card.className = 'card';
             
@@ -699,9 +700,15 @@
             groupData.forEach((rowData, rowIndex) => {
                 const row = document.createElement('tr');
                 
-                if (rowIndex < 2) {
+                if ((groupName === groupNames[groupNames.length - 1] && rowIndex < 2) || 
+                    (groupName !== groupNames[groupNames.length - 1] && rowIndex < 3)) {
                     row.classList.add('top-three');
                 }
+                
+                // if (rowIndex < 2) {
+                //     row.classList.add('top-three');
+                // }
+
                 
                 rowData.forEach((cellText, cellIndex) => {
                     if (cellIndex !== groupColumnIndex) {
