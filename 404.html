@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strona nie znaleziona - Błąd 404</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3f37c9;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --danger: #f72585;
+            --gray: #6c757d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background-color: #f5f7ff;
+            color: var(--dark);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            background-image: radial-gradient(circle at 10% 20%, rgba(67, 97, 238, 0.05) 0%, rgba(67, 97, 238, 0.05) 90%);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        h1 {
+            font-size: 6rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            line-height: 1;
+            position: relative;
+            display: inline-block;
+        }
+
+        h1::after {
+            content: '404';
+            position: absolute;
+            top: 0;
+            left: 0;
+            color: rgba(67, 97, 238, 0.1);
+            font-size: 8rem;
+            z-index: -1;
+            transform: translate(-10%, -10%);
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: var(--gray);
+            margin-bottom: 2rem;
+            max-width: 600px;
+        }
+
+        .home-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 28px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .home-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.4);
+        }
+
+        .home-btn svg {
+            margin-right: 8px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .animation {
+            margin: 2rem auto;
+            width: 200px;
+            height: 200px;
+            position: relative;
+        }
+
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            animation: float 6s infinite ease-in-out;
+        }
+
+        .circle:nth-child(1) {
+            width: 150px;
+            height: 150px;
+            background-color: rgba(67, 97, 238, 0.1);
+            top: 0;
+            left: 0;
+            animation-delay: 0s;
+        }
+
+        .circle:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            background-color: rgba(67, 97, 238, 0.08);
+            bottom: 0;
+            right: 0;
+            animation-delay: 1s;
+        }
+
+        .circle:nth-child(3) {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(67, 97, 238, 0.05);
+            top: 40%;
+            left: 40%;
+            animation-delay: 2s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) translateX(0);
+            }
+            25% {
+                transform: translateY(-20px) translateX(10px);
+            }
+            50% {
+                transform: translateY(10px) translateX(-15px);
+            }
+            75% {
+                transform: translateY(-10px) translateX(15px);
+            }
+        }
+
+        .error-icon {
+            font-size: 4rem;
+            color: var(--danger);
+            margin-bottom: 1.5rem;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Responsywność */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 4rem;
+            }
+            
+            h1::after {
+                font-size: 5rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            p {
+                font-size: 1rem;
+            }
+            
+            .container {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 3rem;
+            }
+            
+            h1::after {
+                font-size: 4rem;
+            }
+            
+            .animation {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .circle:nth-child(1) {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .circle:nth-child(2) {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .circle:nth-child(3) {
+                width: 60px;
+                height: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="error-icon">⚠️</div>
+        <h1>404</h1>
+        <h2>Ups! Strona nie znaleziona</h2>
+        <p>Wygląda na to, że strona, której szukasz, została przeniesiona lub nie istnieje. Sprawdź adres URL lub wróć na stronę główną.</p>
+        
+        <div class="animation">
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+        </div>
+        
+        <a href="/" class="home-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            Powrót do strony głównej
+        </a>
+    </div>
+
+    <script>
+        // Prosta animacja przycisku po załadowaniu strony
+        document.addEventListener('DOMContentLoaded', function() {
+            const btn = document.querySelector('.home-btn');
+            setTimeout(() => {
+                btn.style.transform = 'translateY(-5px)';
+                setTimeout(() => {
+                    btn.style.transform = 'translateY(0)';
+                }, 300);
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
