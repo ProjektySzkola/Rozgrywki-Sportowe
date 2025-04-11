@@ -438,6 +438,14 @@
             document.getElementById('error').style.display = 'none';
             document.getElementById('tables-container').innerHTML = '';
 
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('tables-container').innerHTML = '';
+            document.getElementById('bracket-container').style.display = 'none';
+            document.getElementById('bracket-loading').style.display = 'block';
+
+            loadAndDisplayAllData();
+
             const tableUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${TABLE_RANGE.split('!')[0]}&range=${TABLE_RANGE.split('!')[1]}`;
             
             fetch(tableUrl)
@@ -456,20 +464,35 @@
             });
         }
 
-        // Funkcja do ładowania drabinki
+        // Funkcja do wyświetlania drabinki
         function loadBracketData() {
             document.getElementById('bracket-loading').style.display = 'block';
             document.getElementById('bracket-error').style.display = 'none';
             document.getElementById('bracket-container').style.display = 'none';
 
-            const bracketUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${BRACKET_RANGE.split('!')[0]}&range=${BRACKET_RANGE.split('!')[1]}`;
+            // Pobieranie danych ćwierćfinałów (kolumny X:Z)
+            const quarterfinalsUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dane_Strona_Siatka&range=X3:Z24`;
             
-            fetch(bracketUrl)
-            .then(response => response.text())
-            .then(bracketData => {
+            // Pobieranie danych półfinałów (kolumny AC:AE)
+            const semifinalsUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dane_Strona_Siatka&range=AC4:AE25`;
+            
+            // Pobieranie danych finałów (kolumny AH:AJ)
+            const finalsUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dane_Strona_Siatka&range=AH7:AJ22`;
+
+            // Pobieranie wszystkich danych równolegle
+            Promise.all([
+                fetch(quarterfinalsUrl).then(res => res.text()),
+                fetch(semifinalsUrl).then(res => res.text()),
+                fetch(finalsUrl).then(res => res.text())
+            ])
+            .then(([qfData, sfData, fData]) => {
                 document.getElementById('bracket-loading').style.display = 'none';
-                const bracketArray = csvToArray(bracketData);
-                displayBracket(bracketArray);
+                
+                const qfMatches = processQuarterfinals(csvToArray(qfData));
+                const sfMatches = processSemifinals(csvToArray(sfData));
+                const finalMatch = processFinals(csvToArray(fData));
+                
+                displayBracket(qfMatches, sfMatches, finalMatch);
                 document.getElementById('bracket-container').style.display = 'block';
             })
             .catch(error => {
@@ -480,108 +503,329 @@
             });
         }
 
-        // Funkcja do wyświetlania drabinki
-        function displayBracket(data) {
+        function processQuarterfinals(data) {
+            // Przetwarzanie danych ćwierćfinałów (4 mecze)
+            return [
+                { // QF1 - wiersz 1 (X3:Z3 vs X6:Z6)
+                    team1: { 
+                        name: data[0]?.[0] || '...',  // X3
+                        points: data[0]?.[1] || '',   // Y3
+                        winner: data[0]?.[2] === 'TRUE' // Z3
+                    },
+                    team2: { 
+                        name: data[2]?.[0] || '...',  // X6
+                        points: data[2]?.[1] || '',   // Y6
+                        winner: data[2]?.[2] === 'TRUE' // Z6
+                    }
+                },
+                { // QF2 - wiersz 4 (X9:Z9 vs X12:Z12)
+                    team1: { 
+                        name: data[4]?.[0] || '...',  // X9
+                        points: data[4]?.[1] || '',   // Y9
+                        winner: data[4]?.[2] === 'TRUE' // Z9
+                    },
+                    team2: { 
+                        name: data[6]?.[0] || '...',  // X12
+                        points: data[6]?.[1] || '',   // Y12
+                        winner: data[6]?.[2] === 'TRUE' // Z12
+                    }
+                },
+                { // QF3 - wiersz 7 (X15:Z15 vs X18:Z18)
+                    team1: { 
+                        name: data[8]?.[0] || '...', // X15
+                        points: data[8]?.[1] || '',  // Y15
+                        winner: data[8]?.[2] === 'TRUE' // Z15
+                    },
+                    team2: { 
+                        name: data[10]?.[0] || '...', // X18
+                        points: data[10]?.[1] || '',  // Y18
+                        winner: data[10]?.[2] === 'TRUE' // Z18
+                    }
+                },
+                { // QF4 - wiersz 10 (X21:Z21 vs X24:Z24)
+                    team1: { 
+                        name: data[12]?.[0] || '...', // X21
+                        points: data[12]?.[1] || '',  // Y21
+                        winner: data[12]?.[2] === 'TRUE' // Z21
+                    },
+                    team2: { 
+                        name: data[14]?.[0] || '...', // X24
+                        points: data[14]?.[1] || '',  // Y24
+                        winner: data[14]?.[2] === 'TRUE' // Z24
+                    }
+                }
+            ];
+        }
+
+        function processSemifinals(data) {
+            // Przetwarzanie danych półfinałów (2 mecze)
+            return [
+                { // SF1 - wiersz 1 (AC4:AE4 vs AC7:AE7)
+                    team1: { 
+                        name: data[0]?.[0] || '...',  // AC4
+                        points: data[0]?.[1] || '',   // AD4
+                        winner: data[0]?.[2] === 'TRUE' // AE4
+                    },
+                    team2: { 
+                        name: data[2]?.[0] || '...',  // AC7
+                        points: data[2]?.[1] || '',   // AD7
+                        winner: data[2]?.[2] === 'TRUE' // AE7
+                    }
+                },
+                { // SF2 - wiersz 4 (AC10:AE10 vs AC13:AE13)
+                    team1: { 
+                        name: data[4]?.[0] || '...',  // AC10
+                        points: data[4]?.[1] || '',  // AD10
+                        winner: data[4]?.[2] === 'TRUE' // AE10
+                    },
+                    team2: { 
+                        name: data[6]?.[0] || '...',  // AC13
+                        points: data[6]?.[1] || '',   // AD13
+                        winner: data[6]?.[2] === 'TRUE' // AE13
+                    }
+                }
+            ];
+        }
+        
+        function processFinals(data) {
+            // Przetwarzanie danych finału (1 mecz)
+            return {
+                team1: { 
+                    name: data[0]?.[0] || '...',  // AH7
+                    points: data[0]?.[1] || '',   // AI7
+                    winner: data[0]?.[2] === 'TRUE' // AJ7
+                },
+                team2: { 
+                    name: data[2]?.[0] || '...', // AH19
+                    points: data[2]?.[1] || '',  // AI19
+                    winner: data[2]?.[2] === 'TRUE' // AJ19
+                }
+            };
+        }
+        
+        function loadAndDisplayAllData() {
+            console.clear(); // Czyścimy konsolę dla lepszej czytelności
+            
+            // 1. Pobieranie danych grupowych
+            console.log('%c=== Pobieranie danych grupowych ===', 'color: blue; font-weight: bold');
+            const tableUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${TABLE_RANGE.split('!')[0]}&range=${TABLE_RANGE.split('!')[1]}`;
+            
+            fetch(tableUrl)
+            .then(response => response.text())
+            .then(tableData => {
+                console.log('%cDane grupowe (surowe CSV):', 'color: green');
+                console.log(tableData);
+                
+                const tableArray = csvToArray(tableData);
+                console.log('%cDane grupowe (przetworzone):', 'color: green');
+                console.table(tableArray);
+                
+                // 2. Pobieranie danych drabinki
+                console.log('%c=== Pobieranie danych drabinki ===', 'color: blue; font-weight: bold');
+                const quarterfinalsUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dane_Strona_Siatka&range=X3:Z24`;
+                const semifinalsUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dane_Strona_Siatka&range=AC4:AE25`;
+                const finalsUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dane_Strona_Siatka&range=AH7:AJ22`;
+
+                return Promise.all([
+                    fetch(quarterfinalsUrl).then(res => res.text()),
+                    fetch(semifinalsUrl).then(res => res.text()),
+                    fetch(finalsUrl).then(res => res.text())
+                ]);
+            })
+            .then(([qfData, sfData, fData]) => {
+                // Ćwierćfinały
+                console.log('%cDane ćwierćfinałów (surowe CSV):', 'color: green');
+                console.log(qfData);
+                const qfArray = csvToArray(qfData);
+                console.log('%cDane ćwierćfinałów (przetworzone):', 'color: green');
+                console.table(qfArray);
+                
+                // Półfinały
+                console.log('%cDane półfinałów (surowe CSV):', 'color: green');
+                console.log(sfData);
+                const sfArray = csvToArray(sfData);
+                console.log('%cDane półfinałów (przetworzone):', 'color: green');
+                console.table(sfArray);
+                
+                // Finały
+                console.log('%cDane finałów (surowe CSV):', 'color: green');
+                console.log(fData);
+                const fArray = csvToArray(fData);
+                console.log('%cDane finałów (przetworzone):', 'color: green');
+                console.table(fArray);
+                
+                // Przetwarzanie i wyświetlanie sformatowanych danych
+                const qfMatches = processQuarterfinals(qfArray);
+                const sfMatches = processSemifinals(sfArray);
+                const finalMatch = processFinals(fArray);
+                
+                console.log('%c=== Sformatowane dane drabinki ===', 'color: blue; font-weight: bold');
+                displayBracketInConsole(qfMatches, sfMatches, finalMatch);
+                
+                // Aktualizacja UI
+                displayBracket(qfMatches, sfMatches, finalMatch);
+                document.getElementById('bracket-container').style.display = 'block';
+                document.getElementById('bracket-loading').style.display = 'none';
+            })
+            .catch(error => {
+                console.error('%cBłąd podczas pobierania danych:', 'color: red', error);
+                document.getElementById('bracket-loading').style.display = 'none';
+                document.getElementById('bracket-error').style.display = 'block';
+                document.getElementById('bracket-error').textContent = 'Wystąpił błąd: ' + error.message;
+            });
+        }
+
+        // Funkcja do wyświetlania drabinki w konsoli
+        function displayBracketInConsole(qfMatches, sfMatches, finalMatch) {
+            console.group('%cDrabinka pucharowa', 'font-weight: bold');
+            
+            // Ćwierćfinały
+            console.groupCollapsed('%cĆwierćfinały (4 mecze)', 'color: orange; font-weight: bold');
+            qfMatches.forEach((match, i) => {
+                console.group(`Mecz ${i+1}`);
+                console.log(`%c${match.team1.name} ${match.team1.points}`, match.team1.winner ? 'color: green' : 'color: gray');
+                console.log(`%c${match.team2.name} ${match.team2.points}`, match.team2.winner ? 'color: green' : 'color: gray');
+                console.groupEnd();
+            });
+            console.groupEnd();
+            
+            // Półfinały
+            console.groupCollapsed('%cPółfinały (2 mecze)', 'color: orange; font-weight: bold');
+            sfMatches.forEach((match, i) => {
+                console.group(`Mecz ${i+1}`);
+                console.log(`%c${match.team1.name} ${match.team1.points}`, match.team1.winner ? 'color: green' : 'color: gray');
+                console.log(`%c${match.team2.name} ${match.team2.points}`, match.team2.winner ? 'color: green' : 'color: gray');
+                console.groupEnd();
+            });
+            console.groupEnd();
+            
+            // Finał
+            console.group('%cFinał', 'color: gold; font-weight: bold');
+            console.log(`%c${finalMatch.team1.name} ${finalMatch.team1.points}`, finalMatch.team1.winner ? 'color: green' : 'color: gray');
+            console.log(`%c${finalMatch.team2.name} ${finalMatch.team2.points}`, finalMatch.team2.winner ? 'color: green' : 'color: gray');
+            console.groupEnd();
+            
+            console.groupEnd();
+        }
+
+        // Funkcja przetwarzająca CSV na tablicę (z dodatkowym logowaniem)
+        function csvToArray(csvText) {
+            const lines = csvText.split('\n');
+            const result = lines.map(line => {
+                const values = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(current);
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                
+                values.push(current);
+                return values;
+            });
+            
+            return result;
+        }
+
+
+
+        function displayBracket(qfMatches, sfMatches, finalMatch) {
             const bracketBody = document.getElementById('bracket-body');
             bracketBody.innerHTML = '';
 
-            // Pobieranie danych ćwierćfinałów
-            const qfTeams = [
-                { name: data[1]?.[0] || '...', points: data[1]?.[1] || '', winner: data[1]?.[2] === 'TRUE' },
-                { name: data[4]?.[0] || '...', points: data[4]?.[1] || '', winner: data[4]?.[2] === 'TRUE' },
-                { name: data[7]?.[0] || '...', points: data[7]?.[1] || '', winner: data[7]?.[2] === 'TRUE' },
-                { name: data[9]?.[0] || '...', points: data[9]?.[1] || '', winner: data[9]?.[2] === 'TRUE' },
-                { name: data[12]?.[0] || '...', points: data[12]?.[1] || '', winner: data[12]?.[2] === 'TRUE' },
-                { name: data[15]?.[0] || '...', points: data[15]?.[1] || '', winner: data[15]?.[2] === 'TRUE' }
-            ];
-
-            // Pobieranie danych półfinałów
-            const sfTeams = [
-                { name: data[1]?.[4] || '...', points: data[1]?.[5] || '', winner: data[1]?.[6] === 'TRUE' },
-                { name: data[6]?.[4] || '...', points: data[6]?.[5] || '', winner: data[6]?.[6] === 'TRUE' },
-                { name: data[11]?.[4] || '...', points: data[11]?.[5] || '', winner: data[11]?.[6] === 'TRUE' },
-                { name: data[15]?.[4] || '...', points: data[15]?.[5] || '', winner: data[15]?.[6] === 'TRUE' }
-            ];
-
-            // Pobieranie danych finału
-            const finalTeams = [
-                { name: data[3]?.[8] || '...', points: data[3]?.[9] || '', winner: data[3]?.[10] === 'TRUE' },
-                { name: data[13]?.[8] || '...', points: data[13]?.[9] || '', winner: data[13]?.[10] === 'TRUE' }
-            ];
-
             // Budowanie HTML drabinki
             const html = `
-                <!-- Rząd 1 -->
                 <tr>
+                    <!-- Ćwierćfinał 1 -->
                     <td class="match-cell">
-                        <div class="team ${qfTeams[0].winner ? 'winner' : ''}">
-                            <span class="team-name">${qfTeams[0].name}</span>
-                            <span class="team-points">${qfTeams[0].points}</span>
+                        <div class="team ${qfMatches[0].team1.winner ? 'winner' : ''}">
+                            <span class="team-name">${qfMatches[0].team1.name}</span>
+                            <span class="team-points">${qfMatches[0].team1.points}</span>
+                        </div>
+                        <div class="team ${qfMatches[0].team2.winner ? 'winner' : ''}">
+                            <span class="team-name">${qfMatches[0].team2.name}</span>
+                            <span class="team-points">${qfMatches[0].team2.points}</span>
                         </div>
                     </td>
+                    <!-- Półfinał 1 -->
                     <td rowspan="2" class="match-cell">
-                        <div class="team ${sfTeams[0].winner ? 'winner' : ''}">
-                            <span class="team-name">${sfTeams[0].name}</span>
-                            <span class="team-points">${sfTeams[0].points}</span>
+                        <div class="team ${sfMatches[0].team1.winner ? 'winner' : ''}">
+                            <span class="team-name">${sfMatches[0].team1.name}</span>
+                            <span class="team-points">${sfMatches[0].team1.points}</span>
                         </div>
-                        <div class="team ${sfTeams[1].winner ? 'winner' : ''}">
-                            <span class="team-name">${sfTeams[1].name}</span>
-                            <span class="team-points">${sfTeams[1].points}</span>
+                        <div class="team ${sfMatches[0].team2.winner ? 'winner' : ''}">
+                            <span class="team-name">${sfMatches[0].team2.name}</span>
+                            <span class="team-points">${sfMatches[0].team2.points}</span>
                         </div>
                     </td>
+                    <!-- Finał -->
                     <td rowspan="4" class="match-cell final">
-                        <div class="team ${finalTeams[0].winner ? 'winner' : ''}">
-                            <span class="team-name">${finalTeams[0].name}</span>
-                            <span class="team-points">${finalTeams[0].points}</span>
+                        <div class="team ${finalMatch.team1.winner ? 'winner' : ''}">
+                            <span class="team-name">${finalMatch.team1.name}</span>
+                            <span class="team-points">${finalMatch.team1.points}</span>
                         </div>
-                        <div class="team ${finalTeams[1].winner ? 'winner' : ''}">
-                            <span class="team-name">${finalTeams[1].name}</span>
-                            <span class="team-points">${finalTeams[1].points}</span>
-                        </div>
-                    </td>
-                </tr>
-                <!-- Rząd 2 -->
-                <tr>
-                    <td class="match-cell">
-                        <div class="team ${qfTeams[1].winner ? 'winner' : ''}">
-                            <span class="team-name">${qfTeams[1].name}</span>
-                            <span class="team-points">${qfTeams[1].points}</span>
-                        </div>
-                        <div class="team ${qfTeams[2].winner ? 'winner' : ''}">
-                            <span class="team-name">${qfTeams[2].name}</span>
-                            <span class="team-points">${qfTeams[2].points}</span>
+                        <div class="team ${finalMatch.team2.winner ? 'winner' : ''}">
+                            <span class="team-name">${finalMatch.team2.name}</span>
+                            <span class="team-points">${finalMatch.team2.points}</span>
                         </div>
                     </td>
                 </tr>
-                <!-- Rząd 3 -->
                 <tr>
+                    <!-- Ćwierćfinał 2 -->
                     <td class="match-cell">
-                        <div class="team ${qfTeams[3].winner ? 'winner' : ''}">
-                            <span class="team-name">${qfTeams[3].name}</span>
-                            <span class="team-points">${qfTeams[3].points}</span>
+                        <div class="team ${qfMatches[1].team1.winner ? 'winner' : ''}">
+                            <span class="team-name">${qfMatches[1].team1.name}</span>
+                            <span class="team-points">${qfMatches[1].team1.points}</span>
                         </div>
-                        <div class="team ${qfTeams[4].winner ? 'winner' : ''}">
-                            <span class="team-name">${qfTeams[4].name}</span>
-                            <span class="team-points">${qfTeams[4].points}</span>
+                        <div class="team ${qfMatches[1].team2.winner ? 'winner' : ''}">
+                            <span class="team-name">${qfMatches[1].team2.name}</span>
+                            <span class="team-points">${qfMatches[1].team2.points}</span>
                         </div>
                     </td>
+                </tr>
+                <tr>
+                    <!-- Ćwierćfinał 3 -->
+                    <td class="match-cell">
+                        <div class="team ${qfMatches[2].team1.winner ? 'winner' : ''}">
+                            <span class="team-name">${qfMatches[2].team1.name}</span>
+                            <span class="team-points">${qfMatches[2].team1.points}</span>
+                        </div>
+                        <div class="team ${qfMatches[2].team2.winner ? 'winner' : ''}">
+                            <span class="team-name">${qfMatches[2].team2.name}</span>
+                            <span class="team-points">${qfMatches[2].team2.points}</span>
+                        </div>
+                    </td>
+                    <!-- Półfinał 2 -->
                     <td rowspan="2" class="match-cell">
-                        <div class="team ${sfTeams[2].winner ? 'winner' : ''}">
-                            <span class="team-name">${sfTeams[2].name}</span>
-                            <span class="team-points">${sfTeams[2].points}</span>
+                        <div class="team ${sfMatches[1].team1.winner ? 'winner' : ''}">
+                            <span class="team-name">${sfMatches[1].team1.name}</span>
+                            <span class="team-points">${sfMatches[1].team1.points}</span>
                         </div>
-                        <div class="team ${sfTeams[3].winner ? 'winner' : ''}">
-                            <span class="team-name">${sfTeams[3].name}</span>
-                            <span class="team-points">${sfTeams[3].points}</span>
+                        <div class="team ${sfMatches[1].team2.winner ? 'winner' : ''}">
+                            <span class="team-name">${sfMatches[1].team2.name}</span>
+                            <span class="team-points">${sfMatches[1].team2.points}</span>
                         </div>
                     </td>
                 </tr>
-                <!-- Rząd 4 -->
                 <tr>
+                    <!-- Ćwierćfinał 4 -->
                     <td class="match-cell">
-                        <div class="team ${qfTeams[5].winner ? 'winner' : ''}">
-                            <span class="team-name">${qfTeams[5].name}</span>
-                            <span class="team-points">${qfTeams[5].points}</span>
+                        <div class="team ${qfMatches[3].team1.winner ? 'winner' : ''}">
+                            <span class="team-name">${qfMatches[3].team1.name}</span>
+                            <span class="team-points">${qfMatches[3].team1.points}</span>
+                        </div>
+                        <div class="team ${qfMatches[3].team2.winner ? 'winner' : ''}">
+                            <span class="team-name">${qfMatches[3].team2.name}</span>
+                            <span class="team-points">${qfMatches[3].team2.points}</span>
                         </div>
                     </td>
                 </tr>
