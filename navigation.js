@@ -136,75 +136,53 @@ function loadNavigation() {
         const menu = document.querySelector('.navigation-menu');
         const dropdownBtns = document.querySelectorAll('.navigation-dropdown-btn');
         const isMobile = window.innerWidth <= 992;
-
+    
         if (toggle && menu) {
-            // Toggle menu główne
+            // Funkcja do przełączania widoczności menu
             const toggleMenu = (show) => {
                 const isExpanded = show ?? toggle.getAttribute('aria-expanded') === 'true';
                 toggle.setAttribute('aria-expanded', !isExpanded);
                 toggle.classList.toggle('active', !isExpanded);
                 menuWrapper.classList.toggle('active', !isExpanded);
-                
+    
                 if (!isExpanded) {
                     document.body.style.overflow = 'hidden';
                 } else {
                     document.body.style.overflow = '';
                 }
             };
-
+    
+            // Obsługa kliknięcia przycisku menu
             toggle.addEventListener('click', (e) => {
-                e.stopPropagation();
+                e.stopPropagation(); // Zatrzymanie propagacji zdarzenia
                 toggleMenu();
             });
-
+    
             // Obsługa dropdownów na mobile
             dropdownBtns.forEach(btn => {
-                btn.addEventListener('click', function(e) {
+                btn.addEventListener('click', function (e) {
                     if (!isMobile) return;
-                    
+    
                     e.preventDefault();
-                    e.stopPropagation();
-                    
+                    e.stopPropagation(); // Zatrzymanie propagacji zdarzenia
+    
                     const parentItem = this.closest('.navigation-item');
                     const submenu = parentItem.querySelector('.navigation-submenu');
                     const isOpen = submenu.style.maxHeight;
-                    
+    
                     // Zamknij wszystkie inne submenu
                     document.querySelectorAll('.navigation-submenu').forEach(sm => {
                         if (sm !== submenu) sm.style.maxHeight = null;
                     });
-                    
+    
                     // Toggle aktualne submenu
                     submenu.style.maxHeight = isOpen ? null : submenu.scrollHeight + 'px';
                     parentItem.classList.toggle('submenu-open', !isOpen);
                 });
             });
-
-            // Zamknij menu po kliknięciu na link (dla mobile)
-            document.querySelectorAll('.navigation-sublink').forEach(link => {
-                link.addEventListener('click', () => {
-                    if (isMobile) {
-                        toggleMenu(false);
-                        document.body.style.overflow = '';
-                    }
-                });
-            });
-
-            // Zamknij menu po kliknięciu poza nim
-            document.addEventListener('click', (e) => {
-                if (!menuWrapper.contains(e.target)) {
-                    toggleMenu(false);
-                    document.body.style.overflow = '';
-                }
-            });
-
-            // Zamknij menu po zmianie orientacji
-            window.addEventListener('orientationchange', () => {
-                if (window.innerWidth > 992) {
-                    toggleMenu(false);
-                    document.body.style.overflow = '';
-                }
-            });
+    
+            // Usuń obsługę kliknięcia poza menu
+            // Nie zamykaj menu po kliknięciu w inne miejsca
         }
     }
 

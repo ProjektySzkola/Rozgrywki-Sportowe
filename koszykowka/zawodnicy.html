@@ -131,7 +131,6 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1.5rem;
             padding: 10px 20px;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
@@ -172,7 +171,61 @@
             font-weight: 500;
         }
 
-        /* Responsywność */
+        .search-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+            min-width: 200px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 15px;
+            border: 1px solid var(--light-gray);
+            border-radius: 50px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 2px 12px rgba(67, 97, 238, 0.2);
+        }
+
+        .class-filter {
+            padding: 10px 15px;
+            border: 1px solid var(--light-gray);
+            border-radius: 50px;
+            font-size: 0.9rem;
+            background-color: white;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .class-filter:focus {
+            outline: none;
+            border-color: var(--primary-light);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+            font-style: italic;
+        }
+
         @media (max-width: 768px) {
             body {
                 padding-top: 70px;
@@ -201,6 +254,11 @@
                 padding: 8px 16px;
                 font-size: 0.85rem;
             }
+
+            .search-box, .class-filter {
+                padding: 8px 12px;
+                font-size: 0.85rem;
+            }
         }
 
         @media (max-width: 576px) {
@@ -218,6 +276,19 @@
             
             .card {
                 border-radius: 8px;
+            }
+            
+            .search-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .search-container {
+                width: 100%;
+            }
+            
+            .search-box, .class-filter {
+                width: 100%;
             }
             
             .refresh-btn {
@@ -251,12 +322,22 @@
 
     <div class="container">
         <h1>Zawodnicy - Koszykówka</h1>
-        <button class="refresh-btn" onclick="loadData()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
-                <path d="M21.5 2v6h-6M2.5 22v-6h6M21.5 22a10 10 0 0 0-10-10 10 10 0 0 0-1.74.16M2.5 2a10 10 0 0 0 10 10 10 10 0 0 0 1.74-.16"></path>
-            </svg>
-            Odśwież dane
-        </button>
+        
+        <div class="search-row">
+            <button class="refresh-btn" onclick="loadData()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+                    <path d="M21.5 2v6h-6M2.5 22v-6h6M21.5 22a10 10 0 0 0-10-10 10 10 0 0 0-1.74.16M2.5 2a10 10 0 0 0 10 10 10 10 0 0 0 1.74-.16"></path>
+                </svg>
+                Odśwież dane
+            </button>
+            <div class="search-container">
+                <input type="text" id="search-input" class="search-box" placeholder="Wyszukaj zawodnika..." oninput="filterPlayers()">
+                <select id="class-filter" class="class-filter" onchange="filterPlayers()">
+                    <option value="">Wszystkie klasy</option>
+                </select>
+            </div>
+        </div>
+        
         <div id="loading" class="loading">Ładowanie danych...</div>
         <div id="error" class="error" style="display: none;"></div>
         
@@ -268,8 +349,10 @@
     <script>
         const SPREADSHEET_ID = '15q06r0qd-UE8Wna1tRJxlQ2biZz-PIPxNntGX4uQC0w';
         const PLAYERS_RANGE = 'zawodnicy_kosz!A:R';
+        let allPlayersData = [];
+        let allClasses = new Set();
+        let originalPositions = {};
         
-        // Funkcja do ładowania danych
         function loadData() {
             document.getElementById('loading').style.display = 'block';
             document.getElementById('error').style.display = 'none';
@@ -282,7 +365,8 @@
                 .then(data => {
                     document.getElementById('loading').style.display = 'none';
                     const playersArray = csvToArray(data);
-                    displayPlayersData(playersArray);
+                    allPlayersData = playersArray;
+                    processPlayersData(playersArray);
                 })
                 .catch(error => {
                     document.getElementById('loading').style.display = 'none';
@@ -292,34 +376,7 @@
                 });
         }
 
-        // Funkcja do konwersji CSV na tablicę
-        function csvToArray(csvText) {
-            const lines = csvText.split('\n');
-            return lines.map(line => {
-                const values = [];
-                let current = '';
-                let inQuotes = false;
-                
-                for (let i = 0; i < line.length; i++) {
-                    const char = line[i];
-                    
-                    if (char === '"') {
-                        inQuotes = !inQuotes;
-                    } else if (char === ',' && !inQuotes) {
-                        values.push(current);
-                        current = '';
-                    } else {
-                        current += char;
-                    }
-                }
-                
-                values.push(current);
-                return values;
-            });
-        }
-
-        // Funkcja do wyświetlania danych zawodników
-        function displayPlayersData(data) {
+        function processPlayersData(data) {
             if (!data || data.length === 0) {
                 document.getElementById('error').style.display = 'block';
                 document.getElementById('error').textContent = 'Brak danych zawodników do wyświetlenia';
@@ -349,18 +406,133 @@
                 return;
             }
 
-            // Sortowanie zawodników według punktów
+            allClasses = new Set();
+            players.forEach(player => {
+                if (classIndex !== -1 && player[classIndex]) {
+                    allClasses.add(player[classIndex]);
+                }
+            });
+
+            const classFilter = document.getElementById('class-filter');
+            classFilter.innerHTML = '<option value="">Wszystkie klasy</option>';
+            Array.from(allClasses).sort().forEach(className => {
+                const option = document.createElement('option');
+                option.value = className;
+                option.textContent = className;
+                classFilter.appendChild(option);
+            });
+
+            originalPositions = {};
+            const sortedPlayers = [...players].sort((a, b) => {
+                const pointsA = parseFloat(a[totalIndex]) || 0;
+                const pointsB = parseFloat(b[totalIndex]) || 0;
+                return pointsB - pointsA;
+            });
+            
+            sortedPlayers.forEach((player, index) => {
+                const playerKey = `${player[firstNameIndex]} ${player[lastNameIndex]}`;
+                originalPositions[playerKey] = index + 1;
+            });
+
+            displayPlayersData(data);
+        }
+
+        function filterPlayers() {
+            const searchInput = document.getElementById('search-input').value.toLowerCase();
+            const classFilter = document.getElementById('class-filter').value;
+            
+            const filteredData = [allPlayersData[0]];
+            
+            const players = allPlayersData.slice(1);
+            const headers = allPlayersData[0];
+            
+            const firstNameIndex = headers.findIndex(h => h.toLowerCase() === 'imię');
+            const lastNameIndex = headers.findIndex(h => h.toLowerCase() === 'nazwisko');
+            const classIndex = headers.findIndex(h => h.toLowerCase() === 'klasa');
+            
+            players.forEach(player => {
+                const firstName = player[firstNameIndex] ? player[firstNameIndex].toLowerCase() : '';
+                const lastName = player[lastNameIndex] ? player[lastNameIndex].toLowerCase() : '';
+                const fullName = `${firstName} ${lastName}`;
+                const playerClass = classIndex !== -1 ? player[classIndex] : '';
+                
+                const matchesSearch = searchInput === '' || 
+                    firstName.includes(searchInput) || 
+                    lastName.includes(searchInput) || 
+                    fullName.includes(searchInput);
+                
+                const matchesClass = classFilter === '' || playerClass === classFilter;
+                
+                if (matchesSearch && matchesClass) {
+                    filteredData.push(player);
+                }
+            });
+            
+            displayPlayersData(filteredData);
+        }
+
+        function csvToArray(csvText) {
+            const lines = csvText.split('\n');
+            return lines.map(line => {
+                const values = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(current);
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                
+                values.push(current);
+                return values;
+            });
+        }
+
+        function displayPlayersData(data) {
+            const container = document.getElementById('players-container');
+            container.innerHTML = '';
+
+            if (!data || data.length <= 1) {
+                const noResults = document.createElement('div');
+                noResults.className = 'no-results';
+                noResults.textContent = 'Brak zawodników spełniających kryteria wyszukiwania';
+                container.appendChild(noResults);
+                return;
+            }
+
+            const headers = data[0];
+            const players = data.slice(1);
+            
+            const firstNameIndex = headers.findIndex(h => h.toLowerCase() === 'imię');
+            const lastNameIndex = headers.findIndex(h => h.toLowerCase() === 'nazwisko');
+            const classIndex = headers.findIndex(h => h.toLowerCase() === 'klasa');
+            const totalIndex = headers.findIndex(h => h.toLowerCase() === 'suma');
+            
+            const gameColumns = headers
+                .map((header, index) => header.toLowerCase().startsWith('gra ') ? index : -1)
+                .filter(index => index !== -1)
+                .sort((a, b) => {
+                    const gameNumA = parseInt(headers[a].split(' ')[1]);
+                    const gameNumB = parseInt(headers[b].split(' ')[1]);
+                    return gameNumA - gameNumB;
+                });
+
             players.sort((a, b) => {
                 const pointsA = parseFloat(a[totalIndex]) || 0;
                 const pointsB = parseFloat(b[totalIndex]) || 0;
                 return pointsB - pointsA;
             });
 
-            const container = document.getElementById('players-container');
-            
             const table = document.createElement('table');
             
-            // Nagłówek tabeli
             const thead = document.createElement('thead');
             const headerRow = document.createElement('tr');
             
@@ -376,32 +548,30 @@
             thead.appendChild(headerRow);
             table.appendChild(thead);
             
-            // Zawartość tabeli
             const tbody = document.createElement('tbody');
             
-            players.forEach((player, index) => {
+            players.forEach((player) => {
                 const row = document.createElement('tr');
-                if (index < 3) {
+                const playerKey = `${player[firstNameIndex]} ${player[lastNameIndex]}`;
+                const originalPosition = originalPositions[playerKey];
+                
+                if (originalPosition <= 3) {
                     row.classList.add('top-player');
                 }
                 
-                // Pozycja
                 const positionCell = document.createElement('td');
-                positionCell.textContent = index + 1;
+                positionCell.textContent = originalPosition;
                 row.appendChild(positionCell);
                 
-                // Imię i nazwisko
                 const nameCell = document.createElement('td');
                 nameCell.className = 'player-name';
-                nameCell.textContent = `${player[firstNameIndex]} ${player[lastNameIndex]}`;
+                nameCell.textContent = playerKey;
                 row.appendChild(nameCell);
                 
-                // Klasa
                 const classCell = document.createElement('td');
                 classCell.textContent = classIndex !== -1 ? player[classIndex] : '-';
                 row.appendChild(classCell);
                 
-                // Punkty z gier
                 gameColumns.forEach(gameCol => {
                     const gameCell = document.createElement('td');
                     gameCell.className = 'game-points';
@@ -409,7 +579,6 @@
                     row.appendChild(gameCell);
                 });
                 
-                // Suma punktów
                 const totalCell = document.createElement('td');
                 totalCell.className = 'total-points';
                 totalCell.style.textAlign = 'center';
@@ -426,7 +595,6 @@
             container.appendChild(table);
         }
 
-        // Ładowanie danych po załadowaniu DOM
         document.addEventListener('DOMContentLoaded', function() {
             loadData();
         });
