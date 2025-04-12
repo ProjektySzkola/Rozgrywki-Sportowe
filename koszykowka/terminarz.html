@@ -326,7 +326,7 @@
 
     <div class="container">
         <h1>Terminarz - Koszykówka</h1>
-        <button class="refresh-btn" onclick="loadData()">
+        <button class="refresh-btn" onclick="loadData(true)">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
                 <path d="M21.5 2v6h-6M2.5 22v-6h6M21.5 22a10 10 0 0 0-10-10 10 10 0 0 0-1.74.16M2.5 2a10 10 0 0 0 10 10 10 10 0 0 0 1.74-.16"></path>
             </svg>
@@ -342,15 +342,23 @@
 
     <script>
         let refreshInterval;
-        const LIVE_UPDATE_INTERVAL = 30000;
+        const LIVE_UPDATE_INTERVAL = 30000; // 30 sekund
+        const FULL_UPDATE_INTERVAL = 300000; // 5 minut
+        let lastUpdateTime = null;
 
         const SPREADSHEET_ID = '15q06r0qd-UE8Wna1tRJxlQ2biZz-PIPxNntGX4uQC0w';
         const SCHEDULE_RANGE = 'Dane_Strona!L:R'; // Rozszerzony zakres o kolumnę R (nagłówek meczu)
         
-        function loadData() {
+        function loadData(forceFullUpdate = false) {
             document.getElementById('loading').style.display = 'block';
             document.getElementById('error').style.display = 'none';
-            document.getElementById('schedule-container').innerHTML = '';
+            
+            // Jeśli to nie jest wymuszona aktualizacja i dane są świeże (mniej niż 5 minut), tylko zaktualizuj status LIVE
+            if (!forceFullUpdate && lastUpdateTime && (Date.now() - lastUpdateTime) < FULL_UPDATE_INTERVAL) {
+                document.getElementById('loading').style.display = 'none';
+                updateLiveMatches();
+                return;
+            }
 
             const scheduleUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SCHEDULE_RANGE.split('!')[0]}&range=${SCHEDULE_RANGE.split('!')[1]}`;
             
@@ -360,6 +368,7 @@
                     document.getElementById('loading').style.display = 'none';
                     const scheduleArray = csvToArray(data);
                     displaySchedule(scheduleArray);
+                    lastUpdateTime = Date.now();
                     
                     // Uruchom automatyczną aktualizację
                     setupLiveUpdates();
@@ -369,6 +378,9 @@
                     document.getElementById('error').style.display = 'block';
                     document.getElementById('error').textContent = 'Wystąpił błąd: ' + error.message;
                     console.error('Error:', error);
+                    
+                    // Spróbuj ponownie za 30 sekund
+                    setTimeout(() => loadData(), 30000);
                 });
         }
 
@@ -383,11 +395,11 @@
                 const now = new Date();
                 const currentMinutes = now.getMinutes();
                 
-                // Aktualizuj tylko jeśli jest pełna godzina lub co 30 minut (dla optymalizacji)
-                if (currentMinutes === 0 || currentMinutes === 30) {
+                // Pełna aktualizacja co 5 minut (FULL_UPDATE_INTERVAL)
+                if (!lastUpdateTime || (Date.now() - lastUpdateTime) >= FULL_UPDATE_INTERVAL) {
                     loadData();
                 } else {
-                    // Jeśli nie przeładowujemy danych, tylko zaktualizuj style
+                    // Aktualizuj tylko status LIVE co 30 sekund
                     updateLiveMatches();
                 }
             }, LIVE_UPDATE_INTERVAL);
@@ -616,6 +628,19 @@
         // Automatyczne ładowanie danych po załadowaniu strony
         document.addEventListener('DOMContentLoaded', function() {
             loadData();
+            
+            // Dodaj informację o ostatniej aktualizacji
+            setInterval(() => {
+                if (lastUpdateTime) {
+                    const now = new Date();
+                    const diffInSeconds = Math.floor((now - new Date(lastUpdateTime)) / 1000);
+                    const minutes = Math.floor(diffInSeconds / 60);
+                    const seconds = diffInSeconds % 60;
+                    
+                    // Możesz dodać gdzieś na stronie element pokazujący czas od ostatniej aktualizacji
+                    // np. document.getElementById('last-update').textContent = `Ostatnia aktualizacja: ${minutes} min ${seconds} s temu`;
+                }
+            }, 1000);
         });
     </script>
 </body>

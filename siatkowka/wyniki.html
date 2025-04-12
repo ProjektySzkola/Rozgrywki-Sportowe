@@ -390,12 +390,9 @@
 <body>
     <script src="../navigation.js"></script>
 
-    <!-- dodatek w którym info o nieaktulnych danych -->
-    <!-- <script src="../alert.js"></script> -->
-
     <div class="container">
         <h1>Tabele - Siatkówka</h1>
-        <button class="refresh-btn" onclick="loadData()">
+        <button class="refresh-btn" onclick="loadData(true)">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
                 <path d="M21.5 2v6h-6M2.5 22v-6h6M21.5 22a10 10 0 0 0-10-10 10 10 0 0 0-1.74.16M2.5 2a10 10 0 0 0 10 10 10 10 0 0 0 1.74-.16"></path>
             </svg>
@@ -428,23 +425,29 @@
     </div>
 
     <script>
+        let refreshInterval;
+        const LIVE_UPDATE_INTERVAL = 30000; // 30 sekund
+        const FULL_UPDATE_INTERVAL = 300000; // 5 minut
+        let lastUpdateTime = null;
+
         const SPREADSHEET_ID = '15q06r0qd-UE8Wna1tRJxlQ2biZz-PIPxNntGX4uQC0w';
         const TABLE_RANGE = 'Dane_Strona_Siatka!A:G';
         const BRACKET_RANGE = 'Dane_Strona_Siatka!X2:AH20';
         
         // Funkcja do ładowania danych
-        function loadData() {
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('error').style.display = 'none';
-            document.getElementById('tables-container').innerHTML = '';
-
+        function loadData(forceFullUpdate = false) {
             document.getElementById('loading').style.display = 'block';
             document.getElementById('error').style.display = 'none';
             document.getElementById('tables-container').innerHTML = '';
             document.getElementById('bracket-container').style.display = 'none';
             document.getElementById('bracket-loading').style.display = 'block';
 
-            loadAndDisplayAllData();
+            // Jeśli to nie jest wymuszona aktualizacja i dane są świeże (mniej niż 5 minut), tylko zaktualizuj drabinkę
+            if (!forceFullUpdate && lastUpdateTime && (Date.now() - lastUpdateTime) < FULL_UPDATE_INTERVAL) {
+                document.getElementById('loading').style.display = 'none';
+                loadBracketData();
+                return;
+            }
 
             const tableUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${TABLE_RANGE.split('!')[0]}&range=${TABLE_RANGE.split('!')[1]}`;
             
@@ -455,16 +458,44 @@
                 const tableArray = csvToArray(tableData);
                 displayGroupedData(tableArray);
                 loadBracketData();
+                lastUpdateTime = Date.now();
+                
+                // Uruchom automatyczną aktualizację
+                setupLiveUpdates();
             })
             .catch(error => {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('error').style.display = 'block';
                 document.getElementById('error').textContent = 'Wystąpił błąd: ' + error.message;
                 console.error('Error:', error);
+                
+                // Spróbuj ponownie za 30 sekund
+                setTimeout(() => loadData(), 30000);
             });
         }
 
-        // Funkcja do wyświetlania drabinki
+        function setupLiveUpdates() {
+            // Wyczyść poprzedni interval jeśli istnieje
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+            
+            // Ustaw nowy interval
+            refreshInterval = setInterval(() => {
+                const now = new Date();
+                const currentMinutes = now.getMinutes();
+                
+                // Pełna aktualizacja co 5 minut (FULL_UPDATE_INTERVAL)
+                if (!lastUpdateTime || (Date.now() - lastUpdateTime) >= FULL_UPDATE_INTERVAL) {
+                    loadData();
+                } else {
+                    // Aktualizuj tylko drabinkę co 30 sekund
+                    loadBracketData();
+                }
+            }, LIVE_UPDATE_INTERVAL);
+        }
+
+        // Funkcja do ładowania drabinki
         function loadBracketData() {
             document.getElementById('bracket-loading').style.display = 'block';
             document.getElementById('bracket-error').style.display = 'none';
@@ -602,141 +633,6 @@
                 }
             };
         }
-        
-        function loadAndDisplayAllData() {
-            console.clear(); // Czyścimy konsolę dla lepszej czytelności
-            
-            // 1. Pobieranie danych grupowych
-            console.log('%c=== Pobieranie danych grupowych ===', 'color: blue; font-weight: bold');
-            const tableUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${TABLE_RANGE.split('!')[0]}&range=${TABLE_RANGE.split('!')[1]}`;
-            
-            fetch(tableUrl)
-            .then(response => response.text())
-            .then(tableData => {
-                console.log('%cDane grupowe (surowe CSV):', 'color: green');
-                console.log(tableData);
-                
-                const tableArray = csvToArray(tableData);
-                console.log('%cDane grupowe (przetworzone):', 'color: green');
-                console.table(tableArray);
-                
-                // 2. Pobieranie danych drabinki
-                console.log('%c=== Pobieranie danych drabinki ===', 'color: blue; font-weight: bold');
-                const quarterfinalsUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dane_Strona_Siatka&range=X3:Z24`;
-                const semifinalsUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dane_Strona_Siatka&range=AC4:AE25`;
-                const finalsUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dane_Strona_Siatka&range=AH7:AJ22`;
-
-                return Promise.all([
-                    fetch(quarterfinalsUrl).then(res => res.text()),
-                    fetch(semifinalsUrl).then(res => res.text()),
-                    fetch(finalsUrl).then(res => res.text())
-                ]);
-            })
-            .then(([qfData, sfData, fData]) => {
-                // Ćwierćfinały
-                console.log('%cDane ćwierćfinałów (surowe CSV):', 'color: green');
-                console.log(qfData);
-                const qfArray = csvToArray(qfData);
-                console.log('%cDane ćwierćfinałów (przetworzone):', 'color: green');
-                console.table(qfArray);
-                
-                // Półfinały
-                console.log('%cDane półfinałów (surowe CSV):', 'color: green');
-                console.log(sfData);
-                const sfArray = csvToArray(sfData);
-                console.log('%cDane półfinałów (przetworzone):', 'color: green');
-                console.table(sfArray);
-                
-                // Finały
-                console.log('%cDane finałów (surowe CSV):', 'color: green');
-                console.log(fData);
-                const fArray = csvToArray(fData);
-                console.log('%cDane finałów (przetworzone):', 'color: green');
-                console.table(fArray);
-                
-                // Przetwarzanie i wyświetlanie sformatowanych danych
-                const qfMatches = processQuarterfinals(qfArray);
-                const sfMatches = processSemifinals(sfArray);
-                const finalMatch = processFinals(fArray);
-                
-                console.log('%c=== Sformatowane dane drabinki ===', 'color: blue; font-weight: bold');
-                displayBracketInConsole(qfMatches, sfMatches, finalMatch);
-                
-                // Aktualizacja UI
-                displayBracket(qfMatches, sfMatches, finalMatch);
-                document.getElementById('bracket-container').style.display = 'block';
-                document.getElementById('bracket-loading').style.display = 'none';
-            })
-            .catch(error => {
-                console.error('%cBłąd podczas pobierania danych:', 'color: red', error);
-                document.getElementById('bracket-loading').style.display = 'none';
-                document.getElementById('bracket-error').style.display = 'block';
-                document.getElementById('bracket-error').textContent = 'Wystąpił błąd: ' + error.message;
-            });
-        }
-
-        // Funkcja do wyświetlania drabinki w konsoli
-        function displayBracketInConsole(qfMatches, sfMatches, finalMatch) {
-            console.group('%cDrabinka pucharowa', 'font-weight: bold');
-            
-            // Ćwierćfinały
-            console.groupCollapsed('%cĆwierćfinały (4 mecze)', 'color: orange; font-weight: bold');
-            qfMatches.forEach((match, i) => {
-                console.group(`Mecz ${i+1}`);
-                console.log(`%c${match.team1.name} ${match.team1.points}`, match.team1.winner ? 'color: green' : 'color: gray');
-                console.log(`%c${match.team2.name} ${match.team2.points}`, match.team2.winner ? 'color: green' : 'color: gray');
-                console.groupEnd();
-            });
-            console.groupEnd();
-            
-            // Półfinały
-            console.groupCollapsed('%cPółfinały (2 mecze)', 'color: orange; font-weight: bold');
-            sfMatches.forEach((match, i) => {
-                console.group(`Mecz ${i+1}`);
-                console.log(`%c${match.team1.name} ${match.team1.points}`, match.team1.winner ? 'color: green' : 'color: gray');
-                console.log(`%c${match.team2.name} ${match.team2.points}`, match.team2.winner ? 'color: green' : 'color: gray');
-                console.groupEnd();
-            });
-            console.groupEnd();
-            
-            // Finał
-            console.group('%cFinał', 'color: gold; font-weight: bold');
-            console.log(`%c${finalMatch.team1.name} ${finalMatch.team1.points}`, finalMatch.team1.winner ? 'color: green' : 'color: gray');
-            console.log(`%c${finalMatch.team2.name} ${finalMatch.team2.points}`, finalMatch.team2.winner ? 'color: green' : 'color: gray');
-            console.groupEnd();
-            
-            console.groupEnd();
-        }
-
-        // Funkcja przetwarzająca CSV na tablicę (z dodatkowym logowaniem)
-        function csvToArray(csvText) {
-            const lines = csvText.split('\n');
-            const result = lines.map(line => {
-                const values = [];
-                let current = '';
-                let inQuotes = false;
-                
-                for (let i = 0; i < line.length; i++) {
-                    const char = line[i];
-                    
-                    if (char === '"') {
-                        inQuotes = !inQuotes;
-                    } else if (char === ',' && !inQuotes) {
-                        values.push(current);
-                        current = '';
-                    } else {
-                        current += char;
-                    }
-                }
-                
-                values.push(current);
-                return values;
-            });
-            
-            return result;
-        }
-
-
 
         function displayBracket(qfMatches, sfMatches, finalMatch) {
             const bracketBody = document.getElementById('bracket-body');
@@ -904,7 +800,6 @@
                 });
 
                 createGroupTable(groupName, groupData, headers, document.getElementById('tables-container'), groupColumnIndex, groupNames);
-
             });
         }
 
@@ -949,11 +844,6 @@
                     row.classList.add('top-three');
                 }
                 
-                // if (rowIndex < 2) {
-                //     row.classList.add('top-three');
-                // }
-
-                
                 rowData.forEach((cellText, cellIndex) => {
                     if (cellIndex !== groupColumnIndex) {
                         const td = document.createElement('td');
@@ -975,6 +865,19 @@
         // Ładowanie danych po załadowaniu DOM
         document.addEventListener('DOMContentLoaded', function() {
             loadData();
+            
+            // Dodaj informację o ostatniej aktualizacji
+            setInterval(() => {
+                if (lastUpdateTime) {
+                    const now = new Date();
+                    const diffInSeconds = Math.floor((now - new Date(lastUpdateTime)) / 1000);
+                    const minutes = Math.floor(diffInSeconds / 60);
+                    const seconds = diffInSeconds % 60;
+                    
+                    // Możesz dodać gdzieś na stronie element pokazujący czas od ostatniej aktualizacji
+                    // np. document.getElementById('last-update').textContent = `Ostatnia aktualizacja: ${minutes} min ${seconds} s temu`;
+                }
+            }, 1000);
         });
     </script>
 </body>
