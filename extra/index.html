@@ -12,9 +12,10 @@
             --secondary: #3f37c9;
             --dark: #1a1a2e;
             --light: #f8f9fa;
+            --success: #4cc9f0;
+            --warning: #f72585;
             --gray: #6c757d;
             --light-gray: #e9ecef;
-            --warning: #f72585;
         }
 
         * {
@@ -93,177 +94,12 @@
             border-radius: 2px;
         }
 
-        .welcome-section {
-            text-align: center;
-            margin: 3rem 0;
-        }
-
-        .matches-section {
-            margin: 0 0 3rem 0;
-        }
-
-        .matches-container {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
-            margin-top: 1.5rem;
-        }
-
-        .matches-loading {
-            text-align: center;
-            padding: 1.5rem;
-            font-size: 1rem;
-        }
-
-        .matches-error {
-            text-align: center;
-            padding: 1.5rem;
-            color: var(--warning);
-            font-size: 1rem;
-            display: none;
-        }
-
-        .refresh-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.5rem;
-            padding: 10px 20px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 500;
-            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
-            transition: all 0.3s ease;
-        }
-
-        .refresh-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
-        }
-
-        .date-header {
-            background: linear-gradient(135deg, var(--primary-light), var(--primary));
-            color: white;
-            padding: 10px 16px;
-            border-radius: 6px;
-            margin: 1.2rem 0 0.8rem;
-            font-weight: 500;
-            display: inline-block;
-            box-shadow: 0 3px 10px rgba(67, 97, 238, 0.2);
-            font-size: 0.95rem;
-        }
-
-        .match-container {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            align-items: center;
-            gap: 0.8rem;
-            padding: 0.8rem 0;
-            border-bottom: 1px solid var(--light-gray);
-            position: relative;
-        }
-
-        .match-header {
-            grid-column: span 3;
-            text-align: center;
-            font-weight: 600;
-            color: var(--secondary);
-            margin-bottom: 0.5rem;
-            font-size: 0.95rem;
-            padding: 0.3rem;
-            background-color: rgba(67, 97, 238, 0.08);
-            border-radius: 5px;
-        }
-
-        .team {
-            font-weight: 500;
-            text-align: center;
-            padding: 0.4rem;
-            border-radius: 5px;
-            background-color: rgba(67, 97, 238, 0.05);
-            font-size: 0.9rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .score {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 0.4rem;
-            font-weight: 600;
-            min-width: 60px;
-        }
-
-        .score-value {
-            background-color: var(--primary);
-            color: white;
-            padding: 0.2rem 0.6rem;
-            border-radius: 18px;
-            font-size: 0.85rem;
-        }
-
-        .match-info {
-            grid-column: span 3;
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 0.4rem;
-            font-size: 0.8rem;
-            color: var(--gray);
-        }
-
-        .match-time, .match-location, .match-sport {
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-
-        .icon {
-            width: 14px;
-            height: 14px;
-        }
-
-        .live-match {
-            position: relative;
-            border: 3px solid var(--warning);
-            border-radius: 15px;
-            background-color: rgba(247, 37, 133, 0.05);
-            animation: pulse 1.5s infinite;
-        }
-        
-        .live-badge {
-            position: absolute;
-            bottom: 8px;
-            left: 8px;
-            background-color: var(--warning);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            z-index: 1;
-            animation: pulse 1.5s infinite;
-        }
-
-        .no-matches {
-            text-align: center;
-            padding: 1.5rem;
-            color: var(--gray);
-            font-style: italic;
-        }
-
         .sport-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
-            margin-top: 3rem;
+            margin-top: 2rem;
+            margin-bottom: 4rem;
         }
 
         .sport-card {
@@ -311,6 +147,167 @@
             background: rgba(67, 97, 238, 0.2);
         }
 
+        /* Style dla głównej tabeli turniejowej */
+        .tournament-table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 1rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .tournament-table {
+            width: 100%;
+            min-width: 600px;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .tournament-table th, 
+        .tournament-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .tournament-table th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .tournament-table tr:nth-child(even) {
+            background-color: rgba(67, 97, 238, 0.03);
+        }
+
+        .tournament-table tr:hover {
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+
+        /* Nowe style dla kolumny sumy */
+        .tournament-table th:nth-child(6),
+        .tournament-table td:nth-child(6) {
+            width: 100px;
+            text-align: center;
+        }
+
+        .total-points {
+            display: inline-block;
+            width: 36px;
+            height: 36px;
+            line-height: 36px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .top-three {
+            background-color: rgba(76, 201, 240, 0.1) !important;
+            font-weight: 500;
+        }
+
+        .top-three td:first-child {
+            border-left: 3px solid var(--success);
+        }
+
+        /* Style dla sekcji rankingu */
+        .ranking-section {
+            margin-top: 4rem;
+        }
+
+        .ranking-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .ranking-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .ranking-title {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .ranking-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .ranking-table th {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.8rem;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .ranking-table td {
+            padding: 0.8rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .ranking-table tr:nth-child(even) {
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+
+        .ranking-table tr:hover {
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+
+        /* Style dla konkretnych tabel */
+        #basketball-table,
+        #volleyball-table {
+            text-align: center;
+        }
+
+        #basketball-table th,
+        #volleyball-table th {
+            text-align: center;
+        }
+
+        /* Style dla scalonych komórek i pogrubienia */
+        .merged-row {
+            font-weight: bold;
+            background-color: rgba(67, 97, 238, 0.15) !important;
+        }
+
+        /* Blokada zawijania tekstu */
+        .ranking-table td:last-child {
+            white-space: nowrap;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--gray);
+            font-style: italic;
+        }
+
+        .error {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--warning);
+            font-weight: 500;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 1.5rem;
@@ -323,56 +320,22 @@
             h2 {
                 font-size: 1.5rem;
             }
-            
-            .match-container {
-                grid-template-columns: 1fr auto 1fr;
-            }
-            
-            .match-info {
-                flex-direction: column;
-                align-items: center;
-                gap: 0.5rem;
-            }
-        }
 
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 1; }
+            .ranking-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tournament-table-container {
+                padding: 1rem;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- <header>
-        <nav>
-            <div class="logo-container">
-                <img src="../cropped-logo-1.png" alt="Logo szkoły" class="logo-img">
-                <a href="./extra/index.html" class="logo">Szkolna Liga Sportowa</a>
-            </div>
-        </nav>
-    </header> -->
-
     <script src="../navigation.js"></script>
 
     <div class="container">
         <h1>Witamy w systemie Szkolnej Ligi Sportowej</h1>
-        
-        <!-- <div class="welcome-section">
-            <p>Wybierz dyscyplinę sportową, aby zobaczyć szczegółowe statystyki</p>
-        </div> -->
-
-        <!-- <div class="matches-section">
-            <h2>Najbliższe mecze</h2>
-            <button class="refresh-btn" onclick="loadMatches()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
-                    <path d="M21.5 2v6h-6M2.5 22v-6h6M21.5 22a10 10 0 0 0-10-10 10 10 0 0 0-1.74.16M2.5 2a10 10 0 0 0 10 10 10 10 0 0 0 1.74-.16"></path>
-                </svg>
-                Odśwież dane
-            </button>
-            <div id="matches-loading" class="matches-loading">Ładowanie danych meczów...</div>
-            <div id="matches-error" class="matches-error" style="display: none;"></div>
-            <div class="matches-container" id="upcoming-matches"></div>
-        </div> -->
 
         <h2>Dyscypliny</h2>
         <div class="sport-grid">
@@ -405,52 +368,240 @@
                 </div>
             </div>
         </div>
+
+        <!-- Sekcja z główną tabelą turniejową -->
+        <h2>Główna tabela turniejowa</h2>
+        <div class="tournament-table-container">
+            <div id="main-table-loading" class="loading">Ładowanie danych...</div>
+            <div id="main-table-error" class="error" style="display: none;"></div>
+            <table class="tournament-table" id="main-tournament-table">
+                <thead>
+                    <tr>
+                        <th>Klasa</th>
+                        <th>Nazwa Drużyny</th>
+                        <th>Koszykówka</th>
+                        <th>Siatkówka</th>
+                        <th>Piłka Nożna</th>
+                        <th>Suma Punktów</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Sekcja z rankingiem -->
+        <div class="ranking-section">
+            <h2>System oceniania drabinki turniejowej</h2>
+            <div class="ranking-grid">
+                <div class="ranking-card">
+                    <h3 class="ranking-title">Koszykówka</h3>
+                    <div id="basketball-loading" class="loading">Ładowanie danych...</div>
+                    <div id="basketball-error" class="error" style="display: none;"></div>
+                    <table class="ranking-table" id="basketball-table">
+                        <thead>
+                            <tr>
+                                <th>Miejsce</th>
+                                <th>Punkty</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                
+                <div class="ranking-card">
+                    <h3 class="ranking-title">Siatkówka</h3>
+                    <div id="volleyball-loading" class="loading">Ładowanie danych...</div>
+                    <div id="volleyball-error" class="error" style="display: none;"></div>
+                    <table class="ranking-table" id="volleyball-table">
+                        <thead>
+                            <tr>
+                                <th>Miejsce</th>
+                                <th>Punkty</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                
+                <div class="ranking-card">
+                    <h3 class="ranking-title">Piłka nożna</h3>
+                    <div id="football-loading" class="loading">Ładowanie danych...</div>
+                    <div id="football-error" class="error" style="display: none;"></div>
+                    <table class="ranking-table" id="football-table">
+                        <thead>
+                            <tr>
+                                <th>Miejsce</th>
+                                <th>Punkty</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
         const SPREADSHEET_ID = '15q06r0qd-UE8Wna1tRJxlQ2biZz-PIPxNntGX4uQC0w';
-        const BASKETBALL_RANGE = 'Dane_Strona!L:R';
-        const VOLLEYBALL_RANGE = 'Dane_Strona_Siatka!L:V';
-        let lastUpdateTime = null;
+        const RANGES = {
+            main: 'Main_Ranking!A3:F16',
+            basketball: 'Main_Ranking!H26:I38',
+            volleyball: 'Main_Ranking!J26:K38',
+            football: 'Main_Ranking!L26:M30'
+        };
 
-        document.addEventListener('DOMContentLoaded', function() {
-            loadMatches();
-        });
-
-        function loadMatches() {
-            document.getElementById('matches-loading').style.display = 'block';
-            document.getElementById('matches-error').style.display = 'none';
-            
-            Promise.all([
-                fetchData(BASKETBALL_RANGE, 'Koszykówka'),
-                fetchData(VOLLEYBALL_RANGE, 'Siatkówka')
-            ])
-            .then(([basketballData, volleyballData]) => {
-                document.getElementById('matches-loading').style.display = 'none';
-                lastUpdateTime = Date.now();
-                
-                const allMatches = [...basketballData, ...volleyballData];
-                displayUpcomingMatches(allMatches);
-            })
-            .catch(error => {
-                document.getElementById('matches-loading').style.display = 'none';
-                document.getElementById('matches-error').style.display = 'block';
-                document.getElementById('matches-error').textContent = 'Wystąpił błąd: ' + error.message;
-                console.error('Error:', error);
-            });
+        // Funkcja główna pobierająca dane
+        function loadAllData() {
+            loadMainTable();
+            loadSportData('basketball');
+            loadSportData('volleyball');
+            loadSportData('football');
         }
 
-        function fetchData(range, sport) {
-            const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${range.split('!')[0]}&range=${range.split('!')[1]}`;
+        // Funkcja pobierająca główną tabelę turniejową
+        function loadMainTable() {
+            const loadingElement = document.getElementById('main-table-loading');
+            const errorElement = document.getElementById('main-table-error');
+            const tableBody = document.querySelector('#main-tournament-table tbody');
             
-            return fetch(url)
-                .then(response => response.text())
+            loadingElement.style.display = 'block';
+            errorElement.style.display = 'none';
+            tableBody.innerHTML = '';
+            
+            const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${RANGES.main.split('!')[0]}&range=${RANGES.main.split('!')[1]}`;
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Błąd sieci');
+                    return response.text();
+                })
                 .then(data => {
-                    const matchesArray = csvToArray(data);
-                    return processMatchesData(matchesArray, sport);
+                    loadingElement.style.display = 'none';
+                    const tableData = csvToArray(data);
+                    displayMainTable(tableData);
+                })
+                .catch(error => {
+                    loadingElement.style.display = 'none';
+                    errorElement.style.display = 'block';
+                    errorElement.textContent = `Wystąpił błąd: ${error.message}`;
+                    console.error('Błąd przy ładowaniu głównej tabeli:', error);
                 });
         }
 
+        // Funkcja wyświetlająca główną tabelę turniejową
+        function displayMainTable(data) {
+            const tableBody = document.querySelector('#main-tournament-table tbody');
+            
+            if (!data || data.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="6" style="text-align: center;">Brak danych do wyświetlenia</td>`;
+                tableBody.appendChild(row);
+                return;
+            }
+            
+            // Przetwarzanie danych
+            const processedData = data.map(row => {
+                const basketballPoints = parseInt(row[2] || '0');
+                const volleyballPoints = parseInt(row[3] || '0');
+                const footballPoints = parseInt(row[4] || '0');
+                const totalPoints = basketballPoints + volleyballPoints + footballPoints;
+                
+                return {
+                    class: row[0] || '',
+                    teamName: row[1] || '',
+                    basketballPoints,
+                    volleyballPoints,
+                    footballPoints,
+                    totalPoints
+                };
+            });
+            
+            // Sortowanie danych
+            processedData.sort((a, b) => b.totalPoints - a.totalPoints);
+            
+            // Wyświetlanie danych
+            processedData.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                
+                if (index < 3) {
+                    tr.classList.add('top-three');
+                }
+                
+                tr.innerHTML = `
+                    <td>${row.class}</td>
+                    <td>${row.teamName}</td>
+                    <td class="points">${row.basketballPoints}</td>
+                    <td class="points">${row.volleyballPoints}</td>
+                    <td class="points">${row.footballPoints}</td>
+                    <td class="points"><span class="total-points">${row.totalPoints}</span></td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Funkcja pobierająca dane dla konkretnej dyscypliny
+        function loadSportData(sport) {
+            const loadingElement = document.getElementById(`${sport}-loading`);
+            const errorElement = document.getElementById(`${sport}-error`);
+            const tableBody = document.querySelector(`#${sport}-table tbody`);
+            
+            loadingElement.style.display = 'block';
+            errorElement.style.display = 'none';
+            tableBody.innerHTML = '';
+            
+            const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${RANGES[sport].split('!')[0]}&range=${RANGES[sport].split('!')[1]}`;
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Błąd sieci');
+                    return response.text();
+                })
+                .then(data => {
+                    loadingElement.style.display = 'none';
+                    const rankingData = csvToArray(data);
+                    displayRankingTable(sport, rankingData);
+                })
+                .catch(error => {
+                    loadingElement.style.display = 'none';
+                    errorElement.style.display = 'block';
+                    errorElement.textContent = `Wystąpił błąd: ${error.message}`;
+                    console.error(`Błąd dla ${sport}:`, error);
+                });
+        }
+
+        // Funkcja wyświetlająca dane w tabeli rankingowej
+        function displayRankingTable(sport, data) {
+            const tableBody = document.querySelector(`#${sport}-table tbody`);
+            
+            if (!data || data.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="2" style="text-align: center;">Brak danych do wyświetlenia</td>`;
+                tableBody.appendChild(row);
+                return;
+            }
+            
+            data.forEach((row, index) => {
+                if (row.length >= 2 && (row[0].trim() !== '' || row[1].trim() !== '')) {
+                    const tr = document.createElement('tr');
+                    
+                    if ((sport === 'basketball' || sport === 'volleyball') && 
+                        (index === 0 || index === 3 || index === 7)) {
+                        tr.innerHTML = `
+                            <td colspan="2" class="merged-row" style="text-align: center;">${row[0]}</td>
+                        `;
+                    } else {
+                        tr.innerHTML = `
+                            <td>${row[0]}</td>
+                            <td style="white-space: nowrap;">${row[1]}</td>
+                        `;
+                    }
+                    
+                    tableBody.appendChild(tr);
+                }
+            });
+        }
+
+        // Funkcja konwertująca CSV na tablicę
         function csvToArray(csvText) {
             const lines = csvText.split('\n');
             return lines.map(line => {
@@ -476,208 +627,8 @@
             });
         }
 
-        function processMatchesData(data, sport) {
-            if (!data || data.length === 0) return [];
-            
-            const headers = data[0];
-            const dateIndex = 0;
-            const timeIndex = 1;
-            const team1Index = sport === 'Koszykówka' ? 2 : 3;
-            const team2Index = sport === 'Koszykówka' ? 5 : 7;
-            const matchHeaderIndex = sport === 'Koszykówka' ? 6 : 10;
-            
-            const matches = [];
-            let currentHeader = '';
-            
-            for (let i = 1; i < data.length; i++) {
-                const row = data[i];
-                if (row.length <= dateIndex) continue;
-                
-                const isEmptyRow = row.slice(0, team1Index).every(cell => !cell.trim());
-                const hasHeader = row[matchHeaderIndex] && row[matchHeaderIndex].trim() !== '';
-                
-                if (isEmptyRow && hasHeader) {
-                    currentHeader = row[matchHeaderIndex].trim();
-                    continue;
-                }
-                
-                const date = row[dateIndex].trim();
-                if (!date) continue;
-                
-                const time = row[timeIndex] ? row[timeIndex].trim() : '';
-                const team1 = row[team1Index] ? row[team1Index].trim() : '';
-                const team2 = row[team2Index] ? row[team2Index].trim() : '';
-                const rowHeader = row[matchHeaderIndex] ? row[matchHeaderIndex].trim() : '';
-                
-                const [day, month, year] = date.split('.').map(Number);
-                const matchDate = new Date(year, month - 1, day);
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                
-                if (matchDate >= today) {
-                    matches.push({
-                        date,
-                        time,
-                        team1,
-                        team2,
-                        header: currentHeader || rowHeader,
-                        sport,
-                        isImportant: (currentHeader.toLowerCase().includes('finał') || 
-                                    currentHeader.toLowerCase().includes('półfinał') ||
-                                    currentHeader.toLowerCase().includes('ćwierćfinał')) ||
-                                    (rowHeader.toLowerCase().includes('finał') || 
-                                    rowHeader.toLowerCase().includes('półfinał') ||
-                                    rowHeader.toLowerCase().includes('ćwierćfinał'))
-                    });
-                    
-                    if (!isEmptyRow && rowHeader) {
-                        currentHeader = '';
-                    }
-                }
-            }
-            
-            return matches;
-        }
-
-        function displayUpcomingMatches(matches) {
-            const container = document.getElementById('upcoming-matches');
-            container.innerHTML = '';
-            
-            if (matches.length === 0) {
-                container.innerHTML = '<div class="no-matches">Brak nadchodzących meczów</div>';
-                return;
-            }
-            
-            matches.sort((a, b) => {
-                const [dayA, monthA, yearA] = a.date.split('.').map(Number);
-                const [dayB, monthB, yearB] = b.date.split('.').map(Number);
-                const dateA = new Date(yearA, monthA - 1, dayA);
-                const dateB = new Date(yearB, monthB - 1, dayB);
-                
-                if (dateA - dateB !== 0) return dateA - dateB;
-                
-                if (a.time && b.time) {
-                    const [startTimeA] = a.time.split(' - ');
-                    const [startTimeB] = b.time.split(' - ');
-                    const [hoursA, minutesA] = startTimeA.split(':').map(Number);
-                    const [hoursB, minutesB] = startTimeB.split(':').map(Number);
-                    
-                    if (hoursA !== hoursB) return hoursA - hoursB;
-                    return minutesA - minutesB;
-                }
-                
-                return 0;
-            });
-            
-            const upcomingMatches = matches.slice(0, 10);
-            let lastDate = '';
-            let lastHeader = '';
-            
-            upcomingMatches.forEach(match => {
-                if (match.date !== lastDate) {
-                    const [day, month, year] = match.date.split('.').map(Number);
-                    const dateObj = new Date(year, month - 1, day);
-                    const dayOfWeek = dateObj.toLocaleDateString('pl-PL', { weekday: 'long' });
-                    
-                    const dateHeader = document.createElement('div');
-                    dateHeader.className = 'date-header';
-                    dateHeader.textContent = `${dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)}, ${match.date}`;
-                    container.appendChild(dateHeader);
-                    
-                    lastDate = match.date;
-                    lastHeader = '';
-                }
-                
-                const matchDiv = document.createElement('div');
-                matchDiv.className = 'match-container';
-                matchDiv.setAttribute('data-date', match.date);
-                matchDiv.setAttribute('data-time', match.time);
-                
-                if (match.header && match.header !== lastHeader) {
-                    const headerDiv = document.createElement('div');
-                    headerDiv.className = 'match-header';
-                    headerDiv.textContent = match.header;
-                    matchDiv.appendChild(headerDiv);
-                    
-                    lastHeader = match.header;
-                }
-                
-                updateLiveStatus(matchDiv);
-                
-                const team1Div = document.createElement('div');
-                team1Div.className = 'team home';
-                team1Div.textContent = match.team1;
-                matchDiv.appendChild(team1Div);
-                
-                const scoreDiv = document.createElement('div');
-                scoreDiv.className = 'score';
-                const vsText = document.createElement('div');
-                vsText.textContent = 'vs';
-                scoreDiv.appendChild(vsText);
-                matchDiv.appendChild(scoreDiv);
-                
-                const team2Div = document.createElement('div');
-                team2Div.className = 'team away';
-                team2Div.textContent = match.team2;
-                matchDiv.appendChild(team2Div);
-                
-                const infoDiv = document.createElement('div');
-                infoDiv.className = 'match-info';
-                
-                const timeDiv = document.createElement('div');
-                timeDiv.className = 'match-time';
-                timeDiv.innerHTML = `
-                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    ${match.time || '--:--'}
-                `;
-                infoDiv.appendChild(timeDiv);
-                
-                const sportDiv = document.createElement('div');
-                sportDiv.className = 'match-sport';
-                const sportIcon = match.sport === 'Koszykówka' ? '🏀' : '🏐';
-                sportDiv.innerHTML = `
-                    <span style="font-size: 1.2em; margin-right: 5px;">${sportIcon}</span>
-                    ${match.sport}
-                `;
-                infoDiv.appendChild(sportDiv);
-                
-                matchDiv.appendChild(infoDiv);
-                container.appendChild(matchDiv);
-            });
-        }
-
-        function updateLiveStatus(matchElement) {
-            const currentTimeInMinutes = getCurrentTimeInMinutes();
-            const today = new Date();
-            const todayString = `${today.getDate().toString().padStart(2, '0')}.${(today.getMonth()+1).toString().padStart(2, '0')}.${today.getFullYear()}`;
-            
-            const matchDate = matchElement.getAttribute('data-date');
-            const matchTime = matchElement.getAttribute('data-time');
-            
-            if (matchDate === todayString && matchTime) {
-                const [startTime, endTime] = matchTime.split(' - ');
-                if (startTime) {
-                    const [startHours, startMinutes] = startTime.split(':').map(Number);
-                    const startTimeInMinutes = startHours * 60 + startMinutes;
-                    const endTimeInMinutes = startTimeInMinutes + 60;
-                    
-                    if (currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes <= endTimeInMinutes) {
-                        const liveBadge = document.createElement('div');
-                        liveBadge.className = 'live-badge';
-                        liveBadge.textContent = 'LIVE';
-                        matchElement.appendChild(liveBadge);
-                        matchElement.classList.add('live-match');
-                    }
-                }
-            }
-        }
-
-        function getCurrentTimeInMinutes() {
-            const now = new Date();
-            return now.getHours() * 60 + now.getMinutes();
-        }
+        // Załaduj dane po załadowaniu strony
+        document.addEventListener('DOMContentLoaded', loadAllData);
     </script>
 </body>
 </html>
