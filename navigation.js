@@ -66,6 +66,15 @@ function loadNavigation() {
 
                         </ul>
                     </li>
+
+                    <li class="navigation-item" data-section="football">
+                        <button class="navigation-link navigation-dropdown-btn">Piłka Nożna</button>
+                        <ul class="navigation-submenu">
+                            <li class="navigation-subitem" data-page="wyniki"><a href="../football/wyniki.html" class="navigation-sublink">Wyniki</a></li>
+                            <li class="navigation-subitem" data-page="terminarz"><a href="../football/terminarz.html" class="navigation-sublink">Terminarz</a></li>
+                            <li class="navigation-subitem" data-page="zawodnicy"><a href="../football/zawodnicy.html" class="navigation-sublink">Zawodnicy</a></li>
+                        </ul>
+                    </li>
                     
                     <li class="navigation-item" data-page="dokumenty">
                         <a href="../extra/dokumenty.html" class="navigation-link">Dokumenty</a>

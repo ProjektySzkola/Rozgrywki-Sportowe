@@ -4,7 +4,7 @@
     <link rel="icon" href="../cropped-logo-1.png" type="image/x-icon">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Terminarz - Koszykówka</title>
+    <title>Terminarz - Piłka Nożna</title>
     <style>
         :root {
             --primary: #4361ee;
@@ -325,7 +325,7 @@
     <script src="../navigation.js"></script>
 
     <div class="container">
-        <h1>Terminarz - Koszykówka</h1>
+        <h1>Terminarz - Piłka Nożna</h1>
         <button class="refresh-btn" onclick="loadData(true)">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
                 <path d="M21.5 2v6h-6M2.5 22v-6h6M21.5 22a10 10 0 0 0-10-10 10 10 0 0 0-1.74.16M2.5 2a10 10 0 0 0 10 10 10 10 0 0 0 1.74-.16"></path>
@@ -347,7 +347,7 @@
         let lastUpdateTime = null;
 
         const SPREADSHEET_ID = '15q06r0qd-UE8Wna1tRJxlQ2biZz-PIPxNntGX4uQC0w';
-        const SCHEDULE_RANGE = 'Dane_Strona!L:R'; // Rozszerzony zakres o kolumnę R (nagłówek meczu)
+        const SCHEDULE_RANGE = 'Dane_Strona_Noga!V:AE'; // Nowy zakres dla piłki nożnej
         
         function loadData(forceFullUpdate = false) {
             document.getElementById('loading').style.display = 'block';
@@ -484,13 +484,15 @@
             container.innerHTML = '';
 
             const headers = data[0];
-            const dateIndex = 0;
-            const timeIndex = 1;
-            const team1Index = 2;
-            const score1Index = 3;
-            const score2Index = 4;
-            const team2Index = 5;
-            const matchHeaderIndex = 6; // Nowa kolumna z nagłówkiem meczu
+            const dateIndex = 1; // Kolumna B (Data)
+            const timeIndex = 2; // Kolumna C (Godzina)
+            const class1Index = 3; // Kolumna D (klasa team 1)
+            const team1Index = 4; // Kolumna E (Team 1)
+            const score1Index = 5; // Kolumna F (Wynik - lewa część)
+            const score2Index = 6; // Kolumna G (Wynik - prawa część)
+            const team2Index = 7; // Kolumna H (Team 2)
+            const class2Index = 8; // Kolumna I (klasa team 2)
+            const matchHeaderIndex = 9; // Kolumna J (Nagłówek)
 
             const matchesByDate = {};
             for (let i = 1; i < data.length; i++) {
@@ -552,9 +554,15 @@
                         matchDiv.appendChild(headerDiv);
                     }
                     
+                    // Dodaj klasę drużyny 1 jeśli istnieje
+                    let team1Text = match[team1Index];
+                    if (match[class1Index] && match[class1Index].trim() !== '') {
+                        team1Text = `${match[class1Index]} - ${team1Text}`;
+                    }
+                    
                     const team1Div = document.createElement('div');
                     team1Div.className = 'team home';
-                    team1Div.textContent = match[team1Index];
+                    team1Div.textContent = team1Text;
                     matchDiv.appendChild(team1Div);
                     
                     const scoreDiv = document.createElement('div');
@@ -574,9 +582,15 @@
                     
                     matchDiv.appendChild(scoreDiv);
                     
+                    // Dodaj klasę drużyny 2 jeśli istnieje
+                    let team2Text = match[team2Index];
+                    if (match[class2Index] && match[class2Index].trim() !== '') {
+                        team2Text = `(${match[class2Index]}) ${team2Text}`;
+                    }
+                    
                     const team2Div = document.createElement('div');
                     team2Div.className = 'team away';
-                    team2Div.textContent = match[team2Index];
+                    team2Div.textContent = team2Text;
                     matchDiv.appendChild(team2Div);
                     
                     const infoDiv = document.createElement('div');

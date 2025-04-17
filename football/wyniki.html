@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <link rel="icon" href="../cropped-logo-1.png" type="image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Wyniki - Piłka Nożna</title>
+    <link rel="stylesheet" href="../navigation.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3f37c9;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+        }
+    
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+    
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background-color: #f5f7ff;
+            color: var(--dark);
+            line-height: 1.6;
+            padding-top: 80px;
+        }
+    
+        h1, h2, h3 {
+            color: var(--dark);
+            font-weight: 600;
+        }
+    
+        h1 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+            padding-bottom: 0.8rem;
+        }
+    
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+    
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.2rem;
+            color: var(--primary);
+        }
+    
+        h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+    
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+    
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Style dla drabinki meczowej */
+        .bracket-container {
+            overflow-x: auto;
+            padding-bottom: 10px;
+            -webkit-overflow-scrolling: touch;
+        }
+    
+        .bracket-table {
+            margin: 0 auto;
+            border-collapse: separate;
+            border-spacing: 18px 5px;
+            min-width: 600px;
+        }
+    
+        .round-header {
+            text-align: center;
+            font-weight: bold;
+            padding-bottom: 10px;
+            color: var(--primary);
+            font-size: 1rem;
+            width: 1%;
+        }
+    
+        .match-cell {
+            border: 1px solid var(--light-gray);
+            border-radius: 6px;
+            padding: 8px;
+            background-color: white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            min-width: 160px;
+            vertical-align: middle;
+            height: 70px;
+        }
+    
+        .team {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px;
+            margin: 3px 0;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            background-color: #f9faff;
+            font-size: 0.85rem;
+        }
+    
+        .team-name {
+            flex-grow: 1;
+            padding-right: 8px;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    
+        .team-points {
+            font-weight: bold;
+            color: var(--secondary);
+            min-width: 20px;
+            text-align: right;
+            background-color: rgba(67, 97, 238, 0.1);
+            padding: 2px 5px;
+            border-radius: 10px;
+            font-size: 0.8em;
+        }
+    
+        .winner {
+            background-color: rgba(67, 97, 238, 0.1);
+            font-weight: 500;
+            border-left: 2px solid var(--primary);
+        }
+    
+        .final .match-cell {
+            background-color: rgba(67, 97, 238, 0.08);
+            border: 1px solid var(--primary-light);
+            border-radius: 8px;
+        }
+    
+        .final .team {
+            padding: 8px 10px;
+        }
+    
+        .final .team-name {
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+    
+        .final .team-points {
+            font-size: 0.85em;
+            padding: 2px 6px;
+        }
+    
+        .refresh-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+            transition: all 0.3s ease;
+        }
+    
+        .loading, .error {
+            text-align: center;
+            padding: 1.5rem;
+            font-size: 1rem;
+        }
+
+        /* Responsywność */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 70px;
+            }
+            
+            .container {
+                padding: 1.2rem;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+                margin-bottom: 1.2rem;
+            }
+            
+            .card {
+                padding: 1rem;
+                margin-bottom: 1.2rem;
+            }
+            
+            .bracket-table {
+                min-width: 500px;
+                border-spacing: 8px 4px;
+            }
+            
+            .match-cell {
+                min-width: 140px;
+                height: 60px;
+            }
+            
+            .team {
+                font-size: 0.8rem;
+                padding: 5px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            body {
+                padding-top: 65px;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 1.6rem;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+            }
+            
+            h3 {
+                font-size: 1.1rem;
+            }
+            
+            .refresh-btn {
+                width: 100%;
+                padding: 10px;
+            }
+            
+            .bracket-table {
+                min-width: 400px;
+            }
+            
+            .match-cell {
+                min-width: 120px;
+                height: 55px;
+            }
+            
+            .card {
+                padding: 0.8rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            h1 {
+                font-size: 1.4rem;
+            }
+            
+            .container {
+                padding: 0.8rem;
+            }
+            
+            .card {
+                padding: 0.6rem;
+            }
+            
+            .bracket-table {
+                min-width: 350px;
+                border-spacing: 6px 3px;
+            }
+            
+            .match-cell {
+                min-width: 110px;
+                height: 50px;
+                padding: 6px;
+            }
+            
+            .team {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <script src="../navigation.js"></script>
+
+    <div class="container">
+        <h1>Drabinka Turniejowa - Piłka Nożna</h1>
+        <button class="refresh-btn" onclick="loadData(true)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+                <path d="M21.5 2v6h-6M2.5 22v-6h6M21.5 22a10 10 0 0 0-10-10 10 10 0 0 0-1.74.16M2.5 2a10 10 0 0 0 10 10 10 10 0 0 0 1.74-.16"></path>
+            </svg>
+            Odśwież dane
+        </button>
+        <div id="loading" class="loading">Ładowanie danych...</div>
+        <div id="error" class="error" style="display: none;"></div>
+        
+        <div class="card">
+            <h2>Drabinka Turniejowa</h2>
+            <div id="bracket-loading" class="loading">Ładowanie drabinki...</div>
+            <div id="bracket-error" class="error" style="display: none;"></div>
+            <div id="bracket-container" class="bracket-container" style="display: none;">
+                <table class="bracket-table">
+                    <thead>
+                        <tr>
+                            <th class="round-header">1/6 finału</th>
+                            <th class="round-header">Ćwierćfinał</th>
+                            <th class="round-header">Półfinał</th>
+                            <th class="round-header">Finał</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bracket-body">
+                        <!-- Dane będą wstawiane dynamicznie -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let refreshInterval;
+        const LIVE_UPDATE_INTERVAL = 10*2*30000; // 30 sekund
+        const FULL_UPDATE_INTERVAL = 1800000; // 30 minut
+        let lastUpdateTime = null;
+
+        const SPREADSHEET_ID = '15q06r0qd-UE8Wna1tRJxlQ2biZz-PIPxNntGX4uQC0w';
+        const LEVEL1_RANGE = 'Dane_Strona_Noga!B2:D44';
+        const LEVEL2_RANGE = 'Dane_Strona_Noga!G2:I44';
+        const LEVEL3_RANGE = 'Dane_Strona_Noga!L2:N44';
+        const FINAL_RANGE = 'Dane_Strona_Noga!Q2:S44';
+        
+        // Funkcja do ładowania danych
+        function loadData(forceFullUpdate = false) {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+
+            // Jeśli to nie jest wymuszona aktualizacja i dane są świeże (mniej niż 5 minut), tylko zaktualizuj
+            if (!forceFullUpdate && lastUpdateTime && (Date.now() - lastUpdateTime) < FULL_UPDATE_INTERVAL) {
+                document.getElementById('loading').style.display = 'none';
+                loadBracketData();
+                return;
+            }
+
+            loadBracketData();
+            lastUpdateTime = Date.now();
+                
+            // Uruchom automatyczną aktualizację
+            setupLiveUpdates();
+        }
+
+        function setupLiveUpdates() {
+            // Wyczyść poprzedni interval jeśli istnieje
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+            
+            // Ustaw nowy interval
+            refreshInterval = setInterval(() => {
+                const now = new Date();
+                const currentMinutes = now.getMinutes();
+                
+                // Pełna aktualizacja co 5 minut (FULL_UPDATE_INTERVAL)
+                if (!lastUpdateTime || (Date.now() - lastUpdateTime) >= FULL_UPDATE_INTERVAL) {
+                    loadData();
+                } else {
+                    // Aktualizuj tylko drabinkę co 30 sekund
+                    loadBracketData();
+                }
+            }, LIVE_UPDATE_INTERVAL);
+        }
+
+        // Funkcja do ładowania danych drabinki
+        function loadBracketData() {
+            document.getElementById('bracket-loading').style.display = 'block';
+            document.getElementById('bracket-error').style.display = 'none';
+            document.getElementById('bracket-container').style.display = 'none';
+
+            // Pobieranie danych dla każdego poziomu osobno
+            Promise.all([
+                fetchData(LEVEL1_RANGE),
+                fetchData(LEVEL2_RANGE),
+                fetchData(LEVEL3_RANGE),
+                fetchData(FINAL_RANGE)
+            ])
+            .then(([level1Data, level2Data, level3Data, finalData]) => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('bracket-loading').style.display = 'none';
+                
+                // Logowanie pobranych danych do konsoli
+                console.log('1/6 finału:', level1Data);
+                console.log('Ćwierćfinał:', level2Data);
+                console.log('Półfinał:', level3Data);
+                console.log('Finał:', finalData);
+                
+                // Wyświetlanie drabinki z pobranymi danymi
+                displayBracket(level1Data, level2Data, level3Data, finalData);
+                document.getElementById('bracket-container').style.display = 'block';
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('bracket-loading').style.display = 'none';
+                document.getElementById('bracket-error').style.display = 'block';
+                document.getElementById('bracket-error').textContent = 'Wystąpił błąd przy ładowaniu drabinki: ' + error.message;
+                console.error('Błąd pobierania danych:', error);
+            });
+        }
+
+        // Funkcja do pobierania danych z arkusza
+        function fetchData(range) {
+            const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(range.split('!')[0])}&range=${encodeURIComponent(range.split('!')[1])}`;
+            
+            console.log('Pobieranie danych z:', url);
+            
+            return fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(csvData => {
+                    return csvToArray(csvData);
+                });
+        }
+
+        // Funkcja do wyświetlania drabinki
+        function displayBracket(level1Data, level2Data, level3Data, finalData) {
+            const bracketBody = document.getElementById('bracket-body');
+            bracketBody.innerHTML = '';
+
+            // Pobieranie danych dla poziomu 1 (6 meczów)
+            const level1Teams = [];
+            level1Teams.push({
+                team1: { name: level1Data[1]?.[0] || '...', points: level1Data[1]?.[1] || '', winner: level1Data[1]?.[2] === 'TRUE' },
+                team2: { name: level1Data[3]?.[0] || '...', points: level1Data[3]?.[1] || '', winner: level1Data[3]?.[2] === 'TRUE' }
+            });
+
+            level1Teams.push({
+                team1: { name: level1Data[5]?.[0] || '...', points: level1Data[5]?.[1] || '', winner: level1Data[5]?.[2] === 'TRUE' },
+                team2: { name: level1Data[7]?.[0] || '...', points: level1Data[7]?.[1] || '', winner: level1Data[7]?.[2] === 'TRUE' }
+            });
+
+            level1Teams.push({
+                team1: { name: level1Data[9]?.[0] || '...', points: level1Data[9]?.[1] || '', winner: level1Data[9]?.[2] === 'TRUE' },
+                team2: { name: level1Data[11]?.[0] || '...', points: level1Data[11]?.[1] || '', winner: level1Data[11]?.[2] === 'TRUE' }
+            });
+
+            level1Teams.push({
+                team1: { name: level1Data[13]?.[0] || '...', points: level1Data[13]?.[1] || '', winner: level1Data[13]?.[2] === 'TRUE' },
+                team2: { name: level1Data[15]?.[0] || '...', points: level1Data[15]?.[1] || '', winner: level1Data[15]?.[2] === 'TRUE' }
+            });
+
+            level1Teams.push({
+                team1: { name: level1Data[17]?.[0] || '...', points: level1Data[17]?.[1] || '', winner: level1Data[17]?.[2] === 'TRUE' },
+                team2: { name: level1Data[19]?.[0] || '...', points: level1Data[19]?.[1] || '', winner: level1Data[19]?.[2] === 'TRUE' }
+            });
+
+            level1Teams.push({
+                team1: { name: level1Data[21]?.[0] || '...', points: level1Data[21]?.[1] || '', winner: level1Data[21]?.[2] === 'TRUE' },
+                team2: { name: level1Data[23]?.[0] || '...', points: level1Data[23]?.[1] || '', winner: level1Data[23]?.[2] === 'TRUE' }
+            });
+
+            // Pobieranie danych dla poziomu 2
+            const level2Teams = [];
+            level2Teams.push({
+                team1: { name: level2Data[1]?.[0] || '...', points: level2Data[1]?.[1] || '', winner: level2Data[1]?.[2] === 'TRUE' },
+                team2: { name: level2Data[3]?.[0] || '...', points: level2Data[3]?.[1] || '', winner: level2Data[3]?.[2] === 'TRUE' }
+            });
+
+            level2Teams.push({
+                team1: { name: level2Data[5]?.[0] || '...', points: level2Data[5]?.[1] || '', winner: level2Data[5]?.[2] === 'TRUE' },
+                team2: { name: level2Data[7]?.[0] || '...', points: level2Data[7]?.[1] || '', winner: level2Data[7]?.[2] === 'TRUE' }
+            });
+
+            level2Teams.push({
+                team1: { name: level2Data[9]?.[0] || '...', points: level2Data[9]?.[1] || '', winner: level2Data[9]?.[2] === 'TRUE' },
+                team2: { name: level2Data[11]?.[0] || '...', points: level2Data[11]?.[1] || '', winner: level2Data[11]?.[2] === 'TRUE' }
+            });
+
+            level2Teams.push({
+                team1: { name: level2Data[13]?.[0] || '...', points: level2Data[13]?.[1] || '', winner: level2Data[13]?.[2] === 'TRUE' },
+                team2: { name: level2Data[15]?.[0] || '...', points: level2Data[15]?.[1] || '', winner: level2Data[15]?.[2] === 'TRUE' }
+            });
+
+            level2Teams.push({
+                team1: { name: level2Data[17]?.[0] || '...', points: level2Data[17]?.[1] || '', winner: level2Data[17]?.[2] === 'TRUE' },
+                team2: { name: level2Data[19]?.[0] || '...', points: level2Data[19]?.[1] || '', winner: level2Data[19]?.[2] === 'TRUE' }
+            });
+
+            // Pobieranie danych dla poziomu 3 (2 mecze)
+            const level3Teams = [];
+
+            level3Teams.push({
+                team1: { name: level3Data[1]?.[0] || '...', points: level3Data[1]?.[1] || '', winner: level3Data[1]?.[2] === 'TRUE' },
+                team2: { name: level3Data[3]?.[0] || '...', points: level3Data[3]?.[1] || '', winner: level3Data[3]?.[2] === 'TRUE' }
+            });
+
+            level3Teams.push({
+                team1: { name: level3Data[5]?.[0] || '...', points: level3Data[5]?.[1] || '', winner: level3Data[5]?.[2] === 'TRUE' },
+                team2: { name: level3Data[7]?.[0] || '...', points: level3Data[7]?.[1] || '', winner: level3Data[7]?.[2] === 'TRUE' }
+            });
+
+
+            // Pobieranie danych finału (1 mecz)
+            const finalTeams = {
+                team1: { name: finalData[1]?.[0] || '...', points: finalData[1]?.[1] || '', winner: finalData[1]?.[2] === 'TRUE' },
+                team2: { name: finalData[3]?.[0] || '...', points: finalData[3]?.[1] || '', winner: finalData[3]?.[2] === 'TRUE' }
+            };
+
+            // Budowanie HTML drabinki
+            const html = `
+                <!-- Rząd 1 -->
+                <tr>
+                    <!-- 1/6 finału - Mecz 1 -->
+                    <td class="match-cell">
+                        <div class="team ${level1Teams[0].team1.winner ? 'winner' : ''}">
+                            <span class="team-name">${level1Teams[0].team1.name}</span>
+                            <span class="team-points">${level1Teams[0].team1.points}</span>
+                        </div>
+                        <div class="team ${level1Teams[0].team2.winner ? 'winner' : ''}">
+                            <span class="team-name">${level1Teams[0].team2.name}</span>
+                            <span class="team-points">${level1Teams[0].team2.points}</span>
+                        </div>
+                    </td>
+                    
+                    <!-- Ćwierćfinał - Mecz 1 -->
+                    <td rowspan="2" class="match-cell">
+                        <div class="team ${level2Teams[0].team1.winner ? 'winner' : ''}">
+                            <span class="team-name">${level2Teams[0].team1.name}</span>
+                            <span class="team-points">${level2Teams[0].team1.points}</span>
+                        </div>
+                        <div class="team ${level2Teams[0].team2.winner ? 'winner' : ''}">
+                            <span class="team-name">${level2Teams[0].team2.name}</span>
+                            <span class="team-points">${level2Teams[0].team2.points}</span>
+                        </div>
+                    </td>
+                    
+                    <!-- Półfinał - Mecz 1 -->
+                    <td rowspan="4" class="match-cell">
+                        <div class="team ${level3Teams[0].team1.winner ? 'winner' : ''}">
+                            <span class="team-name">${level3Teams[0].team1.name}</span>
+                            <span class="team-points">${level3Teams[0].team1.points}</span>
+                        </div>
+                        <div class="team ${level3Teams[0].team2.winner ? 'winner' : ''}">
+                            <span class="team-name">${level3Teams[0].team2.name}</span>
+                            <span class="team-points">${level3Teams[0].team2.points}</span>
+                        </div>
+                    </td>
+                    
+                    <!-- Finał -->
+                    <td rowspan="8" class="match-cell final">
+                        <div class="team ${finalTeams.team1.winner ? 'winner' : ''}">
+                            <span class="team-name">${finalTeams.team1.name}</span>
+                            <span class="team-points">${finalTeams.team1.points}</span>
+                        </div>
+                        <div class="team ${finalTeams.team2.winner ? 'winner' : ''}">
+                            <span class="team-name">${finalTeams.team2.name}</span>
+                            <span class="team-points">${finalTeams.team2.points}</span>
+                        </div>
+                    </td>
+                </tr>
+                
+                <!-- Rząd 2 -->
+                <tr>
+                    <!-- 1/6 finału - Mecz 2 -->
+                    <td class="match-cell">
+                        <div class="team ${level1Teams[1].team1.winner ? 'winner' : ''}">
+                            <span class="team-name">${level1Teams[1].team1.name}</span>
+                            <span class="team-points">${level1Teams[1].team1.points}</span>
+                        </div>
+                        <div class="team ${level1Teams[1].team2.winner ? 'winner' : ''}">
+                            <span class="team-name">${level1Teams[1].team2.name}</span>
+                            <span class="team-points">${level1Teams[1].team2.points}</span>
+                        </div>
+                    </td>
+                </tr>
+                
+                <!-- Rząd 3 -->
+                <tr>
+                    <!-- 1/6 finału - Mecz 3 -->
+                    <td class="match-cell">
+                        <div class="team ${level1Teams[2].team1.winner ? 'winner' : ''}">
+                            <span class="team-name">${level1Teams[2].team1.name}</span>
+                            <span class="team-points">${level1Teams[2].team1.points}</span>
+                        </div>
+                        <div class="team ${level1Teams[2].team2.winner ? 'winner' : ''}">
+                            <span class="team-name">${level1Teams[2].team2.name}</span>
+                            <span class="team-points">${level1Teams[2].team2.points}</span>
+                        </div>
+                    </td>
+                    
+                    <!-- Ćwierćfinał - Mecz 2 -->
+                    <td rowspan="2" class="match-cell">
+                        <div class="team ${level2Teams[1].team1.winner ? 'winner' : ''}">
+                            <span class="team-name">${level2Teams[1].team1.name}</span>
+                            <span class="team-points">${level2Teams[1].team1.points}</span>
+                        </div>
+                        <div class="team ${level2Teams[1].team2.winner ? 'winner' : ''}">
+                            <span class="team-name">${level2Teams[1].team2.name}</span>
+                            <span class="team-points">${level2Teams[1].team2.points}</span>
+                        </div>
+                    </td>
+                </tr>
+                
+                <!-- Rząd 4 -->
+                <tr>
+                    <!-- 1/6 finału - Mecz 4 -->
+                    <td class="match-cell">
+                        <div class="team ${level1Teams[3].team1.winner ? 'winner' : ''}">
+                            <span class="team-name">${level1Teams[3].team1.name}</span>
+                            <span class="team-points">${level1Teams[3].team1.points}</span>
+                        </div>
+                        <div class="team ${level1Teams[3].team2.winner ? 'winner' : ''}">
+                            <span class="team-name">${level1Teams[3].team2.name}</span>
+                            <span class="team-points">${level1Teams[3].team2.points}</span>
+                        </div>
+                    </td>
+                </tr>
+                
+                <!-- Rząd 5 -->
+                <tr>
+                    <!-- 1/6 finału - Mecz 5 -->
+                    <td class="match-cell">
+                        <div class="team ${level1Teams[4].team1.winner ? 'winner' : ''}">
+                            <span class="team-name">${level1Teams[4].team1.name}</span>
+                            <span class="team-points">${level1Teams[4].team1.points}</span>
+                        </div>
+                        <div class="team ${level1Teams[4].team2.winner ? 'winner' : ''}">
+                            <span class="team-name">${level1Teams[4].team2.name}</span>
+                            <span class="team-points">${level1Teams[4].team2.points}</span>
+                        </div>
+                    </td>
+                    
+                    <!-- Ćwierćfinał - Mecz 3 -->
+                    <td rowspan="2" class="match-cell">
+                        <div class="team ${level2Teams[2].team1.winner ? 'winner' : ''}">
+                            <span class="team-name">${level2Teams[2].team1.name}</span>
+                            <span class="team-points">${level2Teams[2].team1.points}</span>
+                        </div>
+                        <div class="team ${level2Teams[2].team2.winner ? 'winner' : ''}">
+                            <span class="team-name">${level2Teams[2].team2.name}</span>
+                            <span class="team-points">${level2Teams[2].team2.points}</span>
+                        </div>
+                    </td>
+                    
+                    <!-- Półfinał - Mecz 2 -->
+                    <td rowspan="4" class="match-cell">
+                        <div class="team ${level3Teams[1].team1.winner ? 'winner' : ''}">
+                            <span class="team-name">${level3Teams[1].team1.name}</span>
+                            <span class="team-points">${level3Teams[1].team1.points}</span>
+                        </div>
+                        <div class="team ${level3Teams[1].team2.winner ? 'winner' : ''}">
+                            <span class="team-name">${level3Teams[1].team2.name}</span>
+                            <span class="team-points">${level3Teams[1].team2.points}</span>
+                        </div>
+                    </td>
+                </tr>
+                
+                <!-- Rząd 6 -->
+                <tr>
+                    <!-- 1/6 finału - Mecz 6 -->
+                    <td class="match-cell">
+                        <div class="team ${level1Teams[5].team1.winner ? 'winner' : ''}">
+                            <span class="team-name">${level1Teams[5].team1.name}</span>
+                            <span class="team-points">${level1Teams[5].team1.points}</span>
+                        </div>
+                        <div class="team ${level1Teams[5].team2.winner ? 'winner' : ''}">
+                            <span class="team-name">${level1Teams[5].team2.name}</span>
+                            <span class="team-points">${level1Teams[5].team2.points}</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+
+            bracketBody.innerHTML = html;
+        }
+
+        // Funkcja do konwersji CSV na tablicę
+        function csvToArray(csvText) {
+            const lines = csvText.split('\n');
+            return lines.map(line => {
+                const values = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(current);
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                
+                values.push(current);
+                return values;
+            });
+        }
+
+        // Ładowanie danych po załadowaniu DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            
+            // Dodaj informację o ostatniej aktualizacji
+            setInterval(() => {
+                if (lastUpdateTime) {
+                    const now = new Date();
+                    const diffInSeconds = Math.floor((now - new Date(lastUpdateTime)) / 1000);
+                    const minutes = Math.floor(diffInSeconds / 60);
+                    const seconds = diffInSeconds % 60;
+                    
+                    // Możesz dodać gdzieś na stronie element pokazujący czas od ostatniej aktualizacji
+                    // np. document.getElementById('last-update').textContent = `Ostatnia aktualizacja: ${minutes} min ${seconds} s temu`;
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
