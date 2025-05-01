@@ -394,7 +394,7 @@
         <h1>Tabele - Siatkówka</h1>
         <button class="refresh-btn" onclick="loadData(true)">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
-                <path d="M21.5 2v6h-6M2.5 22v-6h6M21.5 22a10 10 0 0 0-10-10 10 10 0 0 0-1.74.16M2.5 2a10 10 0 0 0 10 10 10 10 0 0 0 1.74-.16"></path>
+                <path d="M21.5 2v6h-6M2.5 22v-6h6M21.5 22a10 10 0 0 0-10-10 a10 10 0 0 0-1.74.16M2.5 2a10 10 0 0 0 10 10 a10 10 0 0 0 1.74-.16"></path>
             </svg>
             Odśwież dane
         </button>
@@ -403,10 +403,12 @@
         
         <div id="tables-container"></div>
 
-        <div class="card">
-            <p>SW - Liczba wygranych setów</p>
-            <p>SP - Liczba przegranych setów</p>
-            <p>+/- - Różnica między wygranymi a przegranymi setami</p>
+        <div class="card" style="display: flex;">
+            <p style="margin-inline: auto;">SW  -  Liczba wygranych setów</p>
+            <p style="margin-inline: auto;">|</p>
+            <p style="margin-inline: auto;">SP  -  Liczba przegranych setów</p>
+            <p style="margin-inline: auto;">|</p>
+            <p style="margin-inline: auto;">+/-  -  Różnica między wygranymi a przegranymi setami</p>
         </div>
 
         <div class="card">
@@ -438,7 +440,6 @@
 
         const SPREADSHEET_ID = '15q06r0qd-UE8Wna1tRJxlQ2biZz-PIPxNntGX4uQC0w';
         const TABLE_RANGE = 'Dane_Strona_Siatka!A:J';
-        const BRACKET_RANGE = 'Dane_Strona_Siatka!x2:AH20';
         
         // Funkcja do ładowania danych
         function loadData(forceFullUpdate = false) {
@@ -507,14 +508,14 @@
             document.getElementById('bracket-error').style.display = 'none';
             document.getElementById('bracket-container').style.display = 'none';
 
-            // Pobieranie danych ćwierćfinałów (kolumny X:Z)
-            const quarterfinalsUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dane_Strona_Siatka&range=X3:Z24`;
+            // Pobieranie danych ćwierćfinałów (kolumny AC:AE)
+            const quarterfinalsUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dane_Strona_Siatka&range=AC3:AE24`;
             
-            // Pobieranie danych półfinałów (kolumny AC:AE)
-            const semifinalsUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dane_Strona_Siatka&range=AC4:AE25`;
+            // Pobieranie danych półfinałów (kolumny AH:AJ)
+            const semifinalsUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dane_Strona_Siatka&range=AH4:AJ25`;
             
-            // Pobieranie danych finałów (kolumny AH:AJ)
-            const finalsUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dane_Strona_Siatka&range=AH7:AJ22`;
+            // Pobieranie danych finałów (kolumny AM:AO)
+            const finalsUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dane_Strona_Siatka&range=AM7:AO22`;
 
             // Pobieranie wszystkich danych równolegle
             Promise.all([
@@ -543,52 +544,52 @@
         function processQuarterfinals(data) {
             // Przetwarzanie danych ćwierćfinałów (4 mecze)
             return [
-                { // QF1 - wiersz 1 (X3:Z3 vs X6:Z6)
+                { // QF1 - wiersz 1 (AC3:AE3 vs AC6:AE6)
                     team1: { 
-                        name: data[0]?.[0] || '...',  // X3
-                        points: data[0]?.[1] || '',   // Y3
-                        winner: data[0]?.[2] === 'TRUE' // Z3
+                        name: data[0]?.[0] || '...',  // AC3
+                        points: data[0]?.[1] || '',   // AD3
+                        winner: data[0]?.[2] === 'TRUE' // AE3
                     },
                     team2: { 
-                        name: data[2]?.[0] || '...',  // X6
-                        points: data[2]?.[1] || '',   // Y6
-                        winner: data[2]?.[2] === 'TRUE' // Z6
+                        name: data[2]?.[0] || '...',  // AC6
+                        points: data[2]?.[1] || '',   // AD6
+                        winner: data[2]?.[2] === 'TRUE' // AE6
                     }
                 },
-                { // QF2 - wiersz 4 (X9:Z9 vs X12:Z12)
+                { // QF2 - wiersz 4 (AC9:AE9 vs AC12:AE12)
                     team1: { 
-                        name: data[4]?.[0] || '...',  // X9
-                        points: data[4]?.[1] || '',   // Y9
-                        winner: data[4]?.[2] === 'TRUE' // Z9
+                        name: data[4]?.[0] || '...',  // AC9
+                        points: data[4]?.[1] || '',   // AD9
+                        winner: data[4]?.[2] === 'TRUE' // AE9
                     },
                     team2: { 
-                        name: data[6]?.[0] || '...',  // X12
-                        points: data[6]?.[1] || '',   // Y12
-                        winner: data[6]?.[2] === 'TRUE' // Z12
+                        name: data[6]?.[0] || '...',  // AC12
+                        points: data[6]?.[1] || '',   // AD12
+                        winner: data[6]?.[2] === 'TRUE' // AE12
                     }
                 },
-                { // QF3 - wiersz 7 (X15:Z15 vs X18:Z18)
+                { // QF3 - wiersz 7 (AC15:AE15 vs AC18:AE18)
                     team1: { 
-                        name: data[8]?.[0] || '...', // X15
-                        points: data[8]?.[1] || '',  // Y15
-                        winner: data[8]?.[2] === 'TRUE' // Z15
+                        name: data[8]?.[0] || '...', // AC15
+                        points: data[8]?.[1] || '',  // AD15
+                        winner: data[8]?.[2] === 'TRUE' // AE15
                     },
                     team2: { 
-                        name: data[10]?.[0] || '...', // X18
-                        points: data[10]?.[1] || '',  // Y18
-                        winner: data[10]?.[2] === 'TRUE' // Z18
+                        name: data[10]?.[0] || '...', // AC18
+                        points: data[10]?.[1] || '',  // AD18
+                        winner: data[10]?.[2] === 'TRUE' // AE18
                     }
                 },
-                { // QF4 - wiersz 10 (X21:Z21 vs X24:Z24)
+                { // QF4 - wiersz 10 (AC21:AE21 vs AC24:AE24)
                     team1: { 
-                        name: data[12]?.[0] || '...', // X21
-                        points: data[12]?.[1] || '',  // Y21
-                        winner: data[12]?.[2] === 'TRUE' // Z21
+                        name: data[12]?.[0] || '...', // AC21
+                        points: data[12]?.[1] || '',  // AD21
+                        winner: data[12]?.[2] === 'TRUE' // AE21
                     },
                     team2: { 
-                        name: data[14]?.[0] || '...', // X24
-                        points: data[14]?.[1] || '',  // Y24
-                        winner: data[14]?.[2] === 'TRUE' // Z24
+                        name: data[14]?.[0] || '...', // AC24
+                        points: data[14]?.[1] || '',  // AD24
+                        winner: data[14]?.[2] === 'TRUE' // AE24
                     }
                 }
             ];
@@ -597,28 +598,28 @@
         function processSemifinals(data) {
             // Przetwarzanie danych półfinałów (2 mecze)
             return [
-                { // SF1 - wiersz 1 (AC4:AE4 vs AC7:AE7)
+                { // SF1 - wiersz 1 (AH4:AJ4 vs AH7:AJ7)
                     team1: { 
-                        name: data[0]?.[0] || '...',  // AC4
-                        points: data[0]?.[1] || '',   // AD4
-                        winner: data[0]?.[2] === 'TRUE' // AE4
+                        name: data[0]?.[0] || '...',  // AH4
+                        points: data[0]?.[1] || '',   // AI4
+                        winner: data[0]?.[2] === 'TRUE' // AJ4
                     },
                     team2: { 
-                        name: data[2]?.[0] || '...',  // AC7
-                        points: data[2]?.[1] || '',   // AD7
-                        winner: data[2]?.[2] === 'TRUE' // AE7
+                        name: data[2]?.[0] || '...',  // AH7
+                        points: data[2]?.[1] || '',   // AI7
+                        winner: data[2]?.[2] === 'TRUE' // AJ7
                     }
                 },
-                { // SF2 - wiersz 4 (AC10:AE10 vs AC13:AE13)
+                { // SF2 - wiersz 4 (AH10:AJ10 vs AH13:AJ13)
                     team1: { 
-                        name: data[4]?.[0] || '...',  // AC10
-                        points: data[4]?.[1] || '',  // AD10
-                        winner: data[4]?.[2] === 'TRUE' // AE10
+                        name: data[4]?.[0] || '...',  // AH10
+                        points: data[4]?.[1] || '',  // AI10
+                        winner: data[4]?.[2] === 'TRUE' // AJ10
                     },
                     team2: { 
-                        name: data[6]?.[0] || '...',  // AC13
-                        points: data[6]?.[1] || '',   // AD13
-                        winner: data[6]?.[2] === 'TRUE' // AE13
+                        name: data[6]?.[0] || '...',  // AH13
+                        points: data[6]?.[1] || '',   // AI13
+                        winner: data[6]?.[2] === 'TRUE' // AJ13
                     }
                 }
             ];
@@ -628,14 +629,14 @@
             // Przetwarzanie danych finału (1 mecz)
             return {
                 team1: { 
-                    name: data[0]?.[0] || '...',  // AH7
-                    points: data[0]?.[1] || '',   // AI7
-                    winner: data[0]?.[2] === 'TRUE' // AJ7
+                    name: data[0]?.[0] || '...',  // AM7
+                    points: data[0]?.[1] || '',   // AN7
+                    winner: data[0]?.[2] === 'TRUE' // AO7
                 },
                 team2: { 
-                    name: data[2]?.[0] || '...', // AH19
-                    points: data[2]?.[1] || '',  // AI19
-                    winner: data[2]?.[2] === 'TRUE' // AJ19
+                    name: data[2]?.[0] || '...', // AM19
+                    points: data[2]?.[1] || '',  // AN19
+                    winner: data[2]?.[2] === 'TRUE' // AO19
                 }
             };
         }
@@ -833,6 +834,7 @@
                     const th = document.createElement('th');
                     th.textContent = headerText;
                     if (index > 2) th.style.textAlign = 'center';
+                    if (index === 6) th.style.backgroundColor = '#2f4fe6';
                     headerRow.appendChild(th);
                 }
             });
@@ -854,6 +856,7 @@
                     if (cellIndex !== groupColumnIndex) {
                         const td = document.createElement('td');
                         if (cellIndex > 2) td.style.textAlign = 'center';
+                        if (cellIndex === 6) td.style.backgroundColor = 'rgba(67, 97, 238, 0.1)';
                         td.textContent = cellText;
                         row.appendChild(td);
                     }
