@@ -513,7 +513,7 @@
                 const [dayB, monthB, yearB] = b.split('.').map(Number);
                 const dateA = new Date(yearA, monthA - 1, dayA);
                 const dateB = new Date(yearB, monthB - 1, dayB);
-                return dateA - dateB;
+                return dateB - dateA;
             });
 
             sortedDates.forEach(date => {
