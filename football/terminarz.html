@@ -124,6 +124,7 @@
         }
 
         .match-container {
+            position: relative;
             display: grid;
             grid-template-columns: 1fr auto 1fr;
             align-items: center;
@@ -202,6 +203,19 @@
             font-weight: bold;
             z-index: 1;
             animation: pulse 1.5s infinite;
+        }
+        
+        .coming-up-badge {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background-color: var(--success);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            z-index: 1;
         }
     
         @keyframes pulse {
@@ -426,14 +440,22 @@
                     
                     const isLive = currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes <= endTimeInMinutes;
                     const liveBadge = match.querySelector('.live-badge');
+                    const comingUpBadge = match.querySelector('.coming-up-badge');
                     
-                    if (isLive && !liveBadge) {
-                        // Dodaj znacznik LIVE
-                        const badge = document.createElement('div');
-                        badge.className = 'live-badge';
-                        badge.textContent = 'LIVE';
-                        match.appendChild(badge);
-                        match.classList.add('live-match');
+                    if (isLive) {
+                        // Remove Coming Up badge if it exists
+                        if (comingUpBadge) {
+                            comingUpBadge.remove();
+                        }
+                        
+                        // Add LIVE badge if it doesn't exist
+                        if (!liveBadge) {
+                            const badge = document.createElement('div');
+                            badge.className = 'live-badge';
+                            badge.textContent = 'LIVE';
+                            match.appendChild(badge);
+                            match.classList.add('live-match');
+                        }
                     } else if (!isLive && liveBadge) {
                         // Usuń znacznik LIVE
                         liveBadge.remove();
@@ -568,8 +590,11 @@
                     const scoreDiv = document.createElement('div');
                     scoreDiv.className = 'score';
                     
-                    if (match[score1Index] && match[score2Index] && 
-                        (match[score1Index].trim() !== '' || match[score2Index].trim() !== '')) {
+                    // Check if the match has been played (has scores)
+                    const hasScores = match[score1Index] && match[score2Index] && 
+                                    (match[score1Index].trim() !== '' || match[score2Index].trim() !== '');
+                    
+                    if (hasScores) {
                         const scoreValue = document.createElement('div');
                         scoreValue.className = 'score-value';
                         scoreValue.textContent = `${match[score1Index] || '0'} : ${match[score2Index] || '0'}`;
@@ -578,6 +603,12 @@
                         const vsText = document.createElement('div');
                         vsText.textContent = 'vs';
                         scoreDiv.appendChild(vsText);
+                        
+                        // Add Coming Up badge for matches that haven't been played yet
+                        const comingUpBadge = document.createElement('div');
+                        comingUpBadge.className = 'coming-up-badge';
+                        comingUpBadge.textContent = 'Coming Up';
+                        matchDiv.appendChild(comingUpBadge);
                     }
                     
                     matchDiv.appendChild(scoreDiv);
@@ -585,7 +616,7 @@
                     // Dodaj klasę drużyny 2 jeśli istnieje
                     let team2Text = match[team2Index];
                     if (match[class2Index] && match[class2Index].trim() !== '') {
-                        team2Text = `(${match[class2Index]}) ${team2Text}`;
+                        team2Text = `${match[class2Index]} - ${team2Text}`;
                     }
                     
                     const team2Div = document.createElement('div');
@@ -630,6 +661,12 @@
                 const endTimeInMinutes = endHours * 60 + endMinutes;
                 
                 if (currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes <= endTimeInMinutes) {
+                    // If match is live, remove Coming Up badge if it exists
+                    const comingUpBadge = matchElement.querySelector('.coming-up-badge');
+                    if (comingUpBadge) {
+                        comingUpBadge.remove();
+                    }
+                    
                     const liveBadge = document.createElement('div');
                     liveBadge.className = 'live-badge';
                     liveBadge.textContent = 'LIVE';
@@ -659,3 +696,4 @@
     </script>
 </body>
 </html>
+
