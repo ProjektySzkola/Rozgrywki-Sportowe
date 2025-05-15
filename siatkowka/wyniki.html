@@ -181,6 +181,15 @@
             background-color: #f9faff;
             font-size: 0.85rem;
         }
+        
+        .final-place-header {
+            text-align: center;
+            font-weight: bold;
+            padding-bottom: 10px;
+            color: var(--primary);
+            font-size: 1rem;
+            width: 100%;
+        }
     
         .team-name {
             flex-grow: 1;
@@ -427,7 +436,7 @@
                         <tr>
                             <th class="round-header">Ćwierćfinały</th>
                             <th class="round-header">Półfinały</th>
-                            <th class="round-header">Finał</th>
+                            <th class="round-header"></th>
                         </tr>
                     </thead>
                     <tbody id="bracket-body">
@@ -523,20 +532,39 @@
             // Pobieranie danych finałów (kolumny AM:AO)
             const finalsUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dane_Strona_Siatka&range=AM7:AO22`;
 
+            // Pobieranie danych meczu o 3 miejsce
+            const thirdPlaceTeam1Url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dane_Strona_Siatka&range=AM25:AO25`;
+            const thirdPlaceTeam2Url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dane_Strona_Siatka&range=AM28:AO28`;
+
             // Pobieranie wszystkich danych równolegle
             Promise.all([
                 fetch(quarterfinalsUrl).then(res => res.text()),
                 fetch(semifinalsUrl).then(res => res.text()),
-                fetch(finalsUrl).then(res => res.text())
+                fetch(finalsUrl).then(res => res.text()),
+                fetch(thirdPlaceTeam1Url).then(res => res.text()),
+                fetch(thirdPlaceTeam2Url).then(res => res.text())
             ])
-            .then(([qfData, sfData, fData]) => {
+            .then(([qfData, sfData, fData, third1Data, third2Data]) => {
                 document.getElementById('bracket-loading').style.display = 'none';
                 
                 const qfMatches = processQuarterfinals(csvToArray(qfData));
                 const sfMatches = processSemifinals(csvToArray(sfData));
                 const finalMatch = processFinals(csvToArray(fData));
+                // Przetwarzanie meczu o 3 miejsce
+                const thirdPlaceTeams = [
+                    {
+                        name: csvToArray(third1Data)[0]?.[0] || '...',
+                        points: csvToArray(third1Data)[0]?.[1] || '',
+                        winner: csvToArray(third1Data)[0]?.[2] === 'TRUE'
+                    },
+                    {
+                        name: csvToArray(third2Data)[0]?.[0] || '...',
+                        points: csvToArray(third2Data)[0]?.[1] || '',
+                        winner: csvToArray(third2Data)[0]?.[2] === 'TRUE'
+                    }
+                ];
                 
-                displayBracket(qfMatches, sfMatches, finalMatch);
+                displayBracket(qfMatches, sfMatches, finalMatch, thirdPlaceTeams);
                 document.getElementById('bracket-container').style.display = 'block';
             })
             .catch(error => {
@@ -647,7 +675,7 @@
             };
         }
 
-        function displayBracket(qfMatches, sfMatches, finalMatch) {
+        function displayBracket(qfMatches, sfMatches, finalMatch, thirdPlaceTeams) {
             const bracketBody = document.getElementById('bracket-body');
             bracketBody.innerHTML = '';
 
@@ -677,7 +705,8 @@
                         </div>
                     </td>
                     <!-- Finał -->
-                    <td rowspan="4" class="match-cell final">
+                    <td rowspan="2" class="match-cell final">
+                        <div class="final-place-header">Finał </div>
                         <div class="team ${finalMatch.team1.winner ? 'winner' : ''}">
                             <span class="team-name">${finalMatch.team1.name}</span>
                             <span class="team-points">${finalMatch.team1.points}</span>
@@ -722,6 +751,18 @@
                         <div class="team ${sfMatches[1].team2.winner ? 'winner' : ''}">
                             <span class="team-name">${sfMatches[1].team2.name}</span>
                             <span class="team-points">${sfMatches[1].team2.points}</span>
+                        </div>
+                    </td>
+                    <!-- Mecz o 3 miejsce -->
+                    <td rowspan="2" class="match-cell">
+                        <div class="final-place-header">Mecz o 3 miejsce </div>
+                        <div class="team ${thirdPlaceTeams[0].winner ? 'winner' : ''}">
+                            <span class="team-name">${thirdPlaceTeams[0].name}</span>
+                            <span class="team-points">${thirdPlaceTeams[0].points}</span>
+                        </div>
+                        <div class="team ${thirdPlaceTeams[1].winner ? 'winner' : ''}">
+                            <span class="team-name">${thirdPlaceTeams[1].name}</span>
+                            <span class="team-points">${thirdPlaceTeams[1].points}</span>
                         </div>
                     </td>
                 </tr>

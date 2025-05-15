@@ -158,6 +158,15 @@
             font-size: 1rem;
             width: 1%;
         }
+
+        .final-place-header {
+            text-align: center;
+            font-weight: bold;
+            padding-bottom: 10px;
+            color: var(--primary);
+            font-size: 1rem;
+            width: 100%;
+        }
     
         .match-cell {
             border: 1px solid var(--light-gray);
@@ -394,7 +403,7 @@
         <h1>Tabele - Koszykówka</h1>
         <button class="refresh-btn" onclick="loadData(true)">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
-                <path d="M21.5 2v6h-6M2.5 22v-6h6M21.5 22a10 10 0 0 0-10-10 10 10 0 0 0-1.74.16M2.5 2a10 10 0 0 0 10 10 10 10 0 0 0 1.74-.16"></path>
+                <path d="M21.5 2v6h-6M2.5 22v-6h6M21.5 22a10 10 0 0 0-10-10 10 0 0 0-1.74.16M2.5 2a10 10 0 0 0 10 10 10 0 0 0 1.74-.16"></path>
             </svg>
             Odśwież dane
         </button>
@@ -413,7 +422,7 @@
                         <tr>
                             <th class="round-header">Ćwierćfinały</th>
                             <th class="round-header">Półfinały</th>
-                            <th class="round-header">Finał</th>
+                            <th class="round-header"></th>
                         </tr>
                     </thead>
                     <tbody id="bracket-body">
@@ -500,13 +509,34 @@
             document.getElementById('bracket-container').style.display = 'none';
 
             const bracketUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${BRACKET_RANGE.split('!')[0]}&range=${BRACKET_RANGE.split('!')[1]}`;
-            
-            fetch(bracketUrl)
-            .then(response => response.text())
-            .then(bracketData => {
+            // Zmieniony zakres dla meczu o 3 miejsce
+            const thirdPlaceTeam1Url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dane_Strona&range=AA26:AC26`;
+            const thirdPlaceTeam2Url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dane_Strona&range=AA29:AC29`;
+
+            Promise.all([
+                fetch(bracketUrl).then(r => r.text()),
+                fetch(thirdPlaceTeam1Url).then(r => r.text()),
+                fetch(thirdPlaceTeam2Url).then(r => r.text())
+            ])
+            .then(([bracketData, team1Data, team2Data]) => {
                 document.getElementById('bracket-loading').style.display = 'none';
                 const bracketArray = csvToArray(bracketData);
-                displayBracket(bracketArray);
+                const team1Array = csvToArray(team1Data);
+                const team2Array = csvToArray(team2Data);
+                // Składamy thirdPlaceTeams w tym miejscu
+                const thirdPlaceTeams = [
+                    {
+                        name: team1Array[0]?.[0] || '...',
+                        points: team1Array[0]?.[1] || '',
+                        winner: team1Array[0]?.[2] === 'TRUE'
+                    },
+                    {
+                        name: team2Array[0]?.[0] || '...',
+                        points: team2Array[0]?.[1] || '',
+                        winner: team2Array[0]?.[2] === 'TRUE'
+                    }
+                ];
+                displayBracket(bracketArray, thirdPlaceTeams);
                 document.getElementById('bracket-container').style.display = 'block';
             })
             .catch(error => {
@@ -518,7 +548,7 @@
         }
 
         // Funkcja do wyświetlania drabinki
-        function displayBracket(data) {
+        function displayBracket(data, thirdPlaceTeams) {
             const bracketBody = document.getElementById('bracket-body');
             bracketBody.innerHTML = '';
 
@@ -546,9 +576,8 @@
                 { name: data[13]?.[8] || '...', points: data[13]?.[9] || '', winner: data[13]?.[10] === 'TRUE' }
             ];
 
-            // Budowanie HTML drabinki
+            // Budowanie HTML drabinki: mecz o 3 miejsce w osobnej komórce match-cell
             const html = `
-                <!-- Rząd 1 -->
                 <tr>
                     <td class="match-cell">
                         <div class="team ${qfTeams[0].winner ? 'winner' : ''}">
@@ -566,7 +595,8 @@
                             <span class="team-points">${sfTeams[1].points}</span>
                         </div>
                     </td>
-                    <td rowspan="4" class="match-cell final">
+                    <td rowspan="2" class="match-cell final">
+                        <div class="final-place-header">Finał </div>
                         <div class="team ${finalTeams[0].winner ? 'winner' : ''}">
                             <span class="team-name">${finalTeams[0].name}</span>
                             <span class="team-points">${finalTeams[0].points}</span>
@@ -577,7 +607,6 @@
                         </div>
                     </td>
                 </tr>
-                <!-- Rząd 2 -->
                 <tr>
                     <td class="match-cell">
                         <div class="team ${qfTeams[1].winner ? 'winner' : ''}">
@@ -590,7 +619,6 @@
                         </div>
                     </td>
                 </tr>
-                <!-- Rząd 3 -->
                 <tr>
                     <td class="match-cell">
                         <div class="team ${qfTeams[3].winner ? 'winner' : ''}">
@@ -612,8 +640,18 @@
                             <span class="team-points">${sfTeams[3].points}</span>
                         </div>
                     </td>
+                    <td rowspan="2" class="match-cell">
+                        <div class="final-place-header">Mecz o 3 miejsce </div>
+                        <div class="team ${thirdPlaceTeams[0].winner ? 'winner' : ''}">
+                            <span class="team-name">${thirdPlaceTeams[0].name}</span>
+                            <span class="team-points">${thirdPlaceTeams[0].points}</span>
+                        </div>
+                        <div class="team ${thirdPlaceTeams[1].winner ? 'winner' : ''}">
+                            <span class="team-name">${thirdPlaceTeams[1].name}</span>
+                            <span class="team-points">${thirdPlaceTeams[1].points}</span>
+                        </div>
+                    </td>
                 </tr>
-                <!-- Rząd 4 -->
                 <tr>
                     <td class="match-cell">
                         <div class="team ${qfTeams[5].winner ? 'winner' : ''}">
