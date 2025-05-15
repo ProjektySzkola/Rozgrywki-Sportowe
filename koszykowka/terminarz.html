@@ -333,6 +333,80 @@
                 font-size: 0.75rem;
             }
         }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            flex: 2;
+        }
+
+        .sort-container {
+            flex: 1;
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--light-gray);
+            border-radius: 50px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            background-color: white;
+            cursor: pointer;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 2px 12px rgba(67, 97, 238, 0.2);
+        }
+
+        .filter-select optgroup {
+            font-weight: 600;
+            color: var(--primary);
+            padding: 8px;
+        }
+
+        .filter-select option {
+            padding: 8px;
+            color: var(--dark);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .filter-container {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .sort-container {
+                width: 100%;
+            }
+
+            .filter-select {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -340,6 +414,36 @@
 
     <div class="container">
         <h1>Terminarz - Koszykówka</h1>
+        <div class="controls">
+            <div class="filter-container">
+                <select id="teamFilter" class="filter-select">
+                    <option value="">Wszystkie drużyny</option>
+                        <option value="2C - Wybrzeże Klatki Schodowej">2C - Wybrzeże Klatki Schodowej</option>
+                        <option value="3G - 3Geeked">3G - 3Geeked</option>
+                        <option value="1D - DREAM TEAM">1D - DREAM TEAM</option>
+                        <option value="1A - AAA">1A - AAA</option>
+                        <option value="3A - Gos Lejos">3A - Gos Lejos</option>
+                        <option value="1C - Chicago Balls">1C - Chicago Balls</option>
+                        <option value="3D - GEEK3D OUT">3D - GEEK3D OUT</option>
+                        <option value="3C - baby peas">3C - baby peas</option>
+                        <option value="3F - 3Freaks">3F - 3Freaks</option>
+                        <option value="2D - 2Dominate">2D - 2Dominate</option>
+                        <option value="3E - Chlepki z Masełkiem">3E - Chlepki z Masełkiem</option>
+                </select>
+                <select id="dateFilter" class="filter-select">
+                    <option value="all">Wszystkie daty</option>
+                    <option value="upcoming">Nadchodzące mecze</option>
+                    <option value="past">Zakończone mecze</option>
+                    <option value="today">Dzisiejsze mecze</option>
+                </select>
+            </div>
+            <div class="sort-container">
+                <select id="sortOrder" class="filter-select">
+                    <option value="newest">Od najnowszych</option>
+                    <option value="oldest">Od najstarszych</option>
+                </select>
+            </div>
+        </div>
         <button class="refresh-btn" onclick="loadData(true)">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
                 <path d="M21.5 2v6h-6M2.5 22v-6h6M21.5 22a10 10 0 0 0-10-10 10 10 0 0 0-1.74.16M2.5 2a10 10 0 0 0 10 10 10 10 0 0 0 1.74-.16"></path>
@@ -503,9 +607,18 @@
             }
 
             const container = document.getElementById('schedule-container');
-            container.innerHTML = '';
+            let matchesByDate = processMatchData(data);
+            
+            // Apply filters and sorting
+            applyFiltersAndSort(matchesByDate);
+            
+            // Setup filter and sort event listeners
+            setupFilterListeners(data);
+        }
 
-            const headers = data[0];
+        function processMatchData(data) {
+            // Move data processing logic here
+            const matchesByDate = {};
             const dateIndex = 0;
             const timeIndex = 1;
             const team1Index = 2;
@@ -514,7 +627,6 @@
             const team2Index = 5;
             const matchHeaderIndex = 6; // Nowa kolumna z nagłówkiem meczu
 
-            const matchesByDate = {};
             for (let i = 1; i < data.length; i++) {
                 const row = data[i];
                 if (row.length <= dateIndex) continue;
@@ -528,106 +640,172 @@
                 matchesByDate[date].push(row);
             }
 
-            const sortedDates = Object.keys(matchesByDate).sort((a, b) => {
+            return matchesByDate;
+        }
+
+        function applyFiltersAndSort(matchesByDate) {
+            const container = document.getElementById('schedule-container');
+            container.innerHTML = '';
+
+            const teamFilter = document.getElementById('teamFilter').value.toLowerCase();
+            const dateFilter = document.getElementById('dateFilter').value;
+            const sortOrder = document.getElementById('sortOrder').value;
+
+            let filteredDates = Object.keys(matchesByDate);
+
+            // Apply date filter
+            filteredDates = filteredDates.filter(date => {
+                const [day, month, year] = date.split('.').map(Number);
+                const matchDate = new Date(year, month - 1, day);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                switch (dateFilter) {
+                    case 'upcoming':
+                        return matchDate >= today;
+                    case 'past':
+                        return matchDate < today;
+                    case 'today':
+                        return matchDate.getTime() === today.getTime();
+                    default:
+                        return true;
+                }
+            });
+
+            // Apply sort
+            filteredDates.sort((a, b) => {
                 const [dayA, monthA, yearA] = a.split('.').map(Number);
                 const [dayB, monthB, yearB] = b.split('.').map(Number);
                 const dateA = new Date(yearA, monthA - 1, dayA);
                 const dateB = new Date(yearB, monthB - 1, dayB);
-                return dateB - dateA;
+                return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
             });
 
-            sortedDates.forEach(date => {
-                const [day, month, year] = date.split('.').map(Number);
-                const dateObj = new Date(year, month - 1, day);
-                const dayOfWeek = dateObj.toLocaleDateString('pl-PL', { weekday: 'long' });
-                
-                const dateHeader = document.createElement('div');
-                dateHeader.className = 'date-header';
-                dateHeader.textContent = `${dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)}, ${date}`;
-                container.appendChild(dateHeader);
-                
-                matchesByDate[date].sort((a, b) => {
-                    const timeA = a[timeIndex].split(' - ')[0];
-                    const timeB = b[timeIndex].split(' - ')[0];
-                    
-                    const [hoursA, minutesA] = timeA.split(':').map(Number);
-                    const [hoursB, minutesB] = timeB.split(':').map(Number);
-                    
-                    if (hoursA !== hoursB) return hoursA - hoursB;
-                    return minutesA - minutesB;
-                });
-                
-                matchesByDate[date].forEach(match => {
-                    const matchDiv = document.createElement('div');
-                    matchDiv.className = 'match-container';
-                    matchDiv.setAttribute('data-date', match[dateIndex]);
-                    matchDiv.setAttribute('data-time', match[timeIndex]);
-                    
-                    // Sprawdź status meczu
-                    updateLiveStatus(matchDiv);
+            let hasResults = false;
 
-                    // Dodaj nagłówek meczu jeśli istnieje
-                    if (match[matchHeaderIndex] && match[matchHeaderIndex].trim() !== '') {
-                        const headerDiv = document.createElement('div');
-                        headerDiv.className = 'match-header';
-                        headerDiv.textContent = match[matchHeaderIndex];
-                        matchDiv.appendChild(headerDiv);
-                    }
+            filteredDates.forEach(date => {
+                const filteredMatches = matchesByDate[date].filter(match => {
+                    const team1 = match[2].toLowerCase();
+                    const team2 = match[5].toLowerCase();
+                    return !teamFilter || team1.includes(teamFilter) || team2.includes(teamFilter);
+                });
+
+                if (filteredMatches.length > 0) {
+                    hasResults = true;
+                    const [day, month, year] = date.split('.').map(Number);
+                    const dateObj = new Date(year, month - 1, day);
+                    const dayOfWeek = dateObj.toLocaleDateString('pl-PL', { weekday: 'long' });
                     
-                    const team1Div = document.createElement('div');
-                    team1Div.className = 'team home';
-                    team1Div.textContent = match[team1Index];
-                    matchDiv.appendChild(team1Div);
+                    const dateHeader = document.createElement('div');
+                    dateHeader.className = 'date-header';
+                    dateHeader.textContent = `${dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)}, ${date}`;
+                    container.appendChild(dateHeader);
                     
-                    const scoreDiv = document.createElement('div');
-                    scoreDiv.className = 'score';
-                    
-                    // Check if the match has been played (has scores)
-                    const hasScores = match[score1Index] && match[score2Index] && 
-                                    (match[score1Index].trim() !== '' || match[score2Index].trim() !== '');
-                    
-                    if (hasScores) {
-                        const scoreValue = document.createElement('div');
-                        scoreValue.className = 'score-value';
-                        scoreValue.textContent = `${match[score1Index] || '0'} : ${match[score2Index] || '0'}`;
-                        scoreDiv.appendChild(scoreValue);
-                    } else {
-                        const vsText = document.createElement('div');
-                        vsText.textContent = 'vs';
-                        scoreDiv.appendChild(vsText);
+                    filteredMatches.sort((a, b) => {
+                        const timeA = a[1].split(' - ')[0];
+                        const timeB = b[1].split(' - ')[0];
                         
-                        // Add Coming Up badge for matches that haven't been played yet
-                        const comingUpBadge = document.createElement('div');
-                        comingUpBadge.className = 'coming-up-badge';
-                        comingUpBadge.textContent = 'Coming Up';
-                        matchDiv.appendChild(comingUpBadge);
-                    }
+                        const [hoursA, minutesA] = timeA.split(':').map(Number);
+                        const [hoursB, minutesB] = timeB.split(':').map(Number);
+                        
+                        if (hoursA !== hoursB) return hoursA - hoursB;
+                        return minutesA - minutesB;
+                    });
                     
-                    matchDiv.appendChild(scoreDiv);
-                    
-                    const team2Div = document.createElement('div');
-                    team2Div.className = 'team away';
-                    team2Div.textContent = match[team2Index];
-                    matchDiv.appendChild(team2Div);
-                    
-                    const infoDiv = document.createElement('div');
-                    infoDiv.className = 'match-info';
-                    
-                    const timeDiv = document.createElement('div');
-                    timeDiv.className = 'match-time';
-                    timeDiv.innerHTML = `
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                        ${match[timeIndex]}
-                    `;
-                    infoDiv.appendChild(timeDiv);
-                    
-                    matchDiv.appendChild(infoDiv);
-                    
-                    container.appendChild(matchDiv);
-                });
+                    filteredMatches.forEach(match => {
+                        const matchDiv = document.createElement('div');
+                        matchDiv.className = 'match-container';
+                        matchDiv.setAttribute('data-date', match[0]);
+                        matchDiv.setAttribute('data-time', match[1]);
+                        
+                        // Sprawdź status meczu
+                        updateLiveStatus(matchDiv);
+
+                        // Dodaj nagłówek meczu jeśli istnieje
+                        if (match[6] && match[6].trim() !== '') {
+                            const headerDiv = document.createElement('div');
+                            headerDiv.className = 'match-header';
+                            headerDiv.textContent = match[6];
+                            matchDiv.appendChild(headerDiv);
+                        }
+                        
+                        const team1Div = document.createElement('div');
+                        team1Div.className = 'team home';
+                        team1Div.textContent = match[2];
+                        matchDiv.appendChild(team1Div);
+                        
+                        const scoreDiv = document.createElement('div');
+                        scoreDiv.className = 'score';
+                        
+                        // Check if the match has been played (has scores)
+                        const hasScores = match[3] && match[4] && 
+                                        (match[3].trim() !== '' || match[4].trim() !== '');
+                        
+                        if (hasScores) {
+                            const scoreValue = document.createElement('div');
+                            scoreValue.className = 'score-value';
+                            scoreValue.textContent = `${match[3] || '0'} : ${match[4] || '0'}`;
+                            scoreDiv.appendChild(scoreValue);
+                        } else {
+                            const vsText = document.createElement('div');
+                            vsText.textContent = 'vs';
+                            scoreDiv.appendChild(vsText);
+                            
+                            // Add Coming Up badge for matches that haven't been played yet
+                            const comingUpBadge = document.createElement('div');
+                            comingUpBadge.className = 'coming-up-badge';
+                            comingUpBadge.textContent = 'Coming Up';
+                            matchDiv.appendChild(comingUpBadge);
+                        }
+                        
+                        matchDiv.appendChild(scoreDiv);
+                        
+                        const team2Div = document.createElement('div');
+                        team2Div.className = 'team away';
+                        team2Div.textContent = match[5];
+                        matchDiv.appendChild(team2Div);
+                        
+                        const infoDiv = document.createElement('div');
+                        infoDiv.className = 'match-info';
+                        
+                        const timeDiv = document.createElement('div');
+                        timeDiv.className = 'match-time';
+                        timeDiv.innerHTML = `
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            ${match[1]}
+                        `;
+                        infoDiv.appendChild(timeDiv);
+                        
+                        matchDiv.appendChild(infoDiv);
+                        
+                        container.appendChild(matchDiv);
+                    });
+                }
             });
+
+            if (!hasResults) {
+                const noResults = document.createElement('div');
+                noResults.className = 'no-results';
+                noResults.textContent = 'Nie znaleziono meczy spełniających kryteria wyszukiwania';
+                container.appendChild(noResults);
+            }
+        }
+
+        function setupFilterListeners(data) {
+            const teamFilter = document.getElementById('teamFilter');
+            const dateFilter = document.getElementById('dateFilter');
+            const sortOrder = document.getElementById('sortOrder');
+
+            const applyFilters = () => {
+                const matchesByDate = processMatchData(data);
+                applyFiltersAndSort(matchesByDate);
+            };
+
+            teamFilter.addEventListener('input', applyFilters);
+            dateFilter.addEventListener('change', applyFilters);
+            sortOrder.addEventListener('change', applyFilters);
         }
 
         function updateLiveStatus(matchElement) {

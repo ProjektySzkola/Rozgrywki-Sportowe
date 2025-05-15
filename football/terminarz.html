@@ -230,6 +230,53 @@
             100% { opacity: 1; }
         }
 
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            flex: 2;
+        }
+
+        .sort-container {
+            flex: 1;
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--light-gray);
+            border-radius: 50px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            background-color: white;
+            cursor: pointer;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 2px 12px rgba(67, 97, 238, 0.2);
+        }
+
+        .filter-select optgroup {
+            font-weight: 600;
+            color: var(--primary);
+            padding: 8px;
+        }
+
+        .filter-select option {
+            padding: 8px;
+            color: var(--dark);
+        }
+
         /* Responsywność */
         @media (max-width: 768px) {
             body {
@@ -340,6 +387,37 @@
 
     <div class="container">
         <h1>Terminarz - Piłka Nożna</h1>
+        <div class="controls">
+            <div class="filter-container">
+                <select id="teamFilter" class="filter-select">
+                    <option value="">Wszystkie drużyny</option>
+                    <option value="3F - 3Freaks">3F - 3Freaks</option>
+                    <option value="1D - DREAM TEAM">1D - DREAM TEAM</option>
+                    <option value="2G - Fc Kryształ">2G - Fc Kryształ</option>
+                    <option value="3C - baby peas">3C - baby peas</option>
+                    <option value="2B - ZPW 2B">2B - ZPW 2B</option>
+                    <option value="3A - Gos Lejos">3A - Gos Lejos</option>
+                    <option value="2F - Sicarios">2F - Sicarios</option>
+                    <option value="2D - 2Dominate">2D - 2Dominate</option>
+                    <option value="3G - 3Geeked">3G - 3Geeked</option>
+                    <option value="3D - GEEK3D OUT">3D - GEEK3D OUT</option>
+                    <option value="2C - Wybrzeże Klatki Schodowej">2C - Wybrzeże Klatki Schodowej</option>
+                    <option value="1C - Chicago Balls">1C - Chicago Balls</option>
+                </select>
+                <select id="dateFilter" class="filter-select">
+                    <option value="all">Wszystkie daty</option>
+                    <option value="upcoming">Nadchodzące mecze</option>
+                    <option value="past">Zakończone mecze</option>
+                    <option value="today">Dzisiejsze mecze</option>
+                </select>
+            </div>
+            <div class="sort-container">
+                <select id="sortOrder" class="filter-select">
+                    <option value="newest">Od najnowszych</option>
+                    <option value="oldest">Od najstarszych</option>
+                </select>
+            </div>
+        </div>
         <button class="refresh-btn" onclick="loadData(true)">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
                 <path d="M21.5 2v6h-6M2.5 22v-6h6M21.5 22a10 10 0 0 0-10-10 10 10 0 0 0-1.74.16M2.5 2a10 10 0 0 0 10 10 10 10 0 0 0 1.74-.16"></path>
@@ -369,7 +447,7 @@
             
             // Jeśli to nie jest wymuszona aktualizacja i dane są świeże (mniej niż 5 minut), tylko zaktualizuj status LIVE
             if (!forceFullUpdate && lastUpdateTime && (Date.now() - lastUpdateTime) < FULL_UPDATE_INTERVAL) {
-                document.getElementById('loading').style.display = 'none';
+                document.getElementId('loading').style.display = 'none';
                 updateLiveMatches();
                 return;
             }

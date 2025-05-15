@@ -347,6 +347,123 @@
                 font-size: 0.65rem;
             }
         }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            flex: 2;
+        }
+
+        .sort-container {
+            flex: 1;
+        }
+
+        .filter-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 2px solid var(--light-gray);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--light-gray);
+            border-radius: 50px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            background-color: white;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 2px 12px rgba(67, 97, 238, 0.2);
+        }
+
+        .filter-select optgroup {
+            font-weight: 600;
+            color: var(--primary);
+            padding: 8px;
+        }
+
+        .filter-select option {
+            padding: 8px;
+            color: var(--dark);
+        }
+
+        .filter-select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .filter-container {
+                grid-template-columns: 1fr;
+                width: 100%;
+            }
+
+            .sort-container {
+                width: 100%;
+            }
+
+            .filter-select {
+                width: 100%;
+                padding: 8px 12px;
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .filter-container {
+                width: 100%;
+            }
+
+            .filter-select {
+                width: 100%;
+            }
+
+            .refresh-btn {
+                width: 100%;
+                padding: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -357,6 +474,39 @@
 
     <div class="container">
         <h1>Terminarz - Siatkówka</h1>
+        <div class="controls">
+            <div class="filter-container">
+                <select id="teamFilter" class="filter-select">
+                    <option value="">Wszystkie drużyny</option>
+                        <option value="2C - Wybrzeże Klatki Schodowej">2C - Wybrzeże Klatki Schodowej</option>
+                        <option value="2F - Sicarios">2F - Sicarios</option>
+                        <option value="3C - baby peas">3C - baby peas</option>
+                        <option value="3D - GEEK3D OUT">3D - GEEK3D OUT</option>
+                        <option value="3E - Chlepki z Masełkiem">3E - Chlepki z Masełkiem</option>
+                        <option value="1A - AAA">1A - AAA</option>
+                        <option value="1D - DREAM TEAM">1D - DREAM TEAM</option>
+                        <option value="2D - 2Dominate">2D - 2Dominate</option>
+                        <option value="3A - Gos Lejos">3A - Gos Lejos</option>
+                        <option value="3G - 3Geeked">3G - 3Geeked</option>
+                        <option value="1C - Chicago Balls">1C - Chicago Balls</option>
+                        <option value="2B - ZPW 2B">2B - ZPW 2B</option>
+                        <option value="2G - Fc Kryształ">2G - Fc Kryształ</option>
+                        <option value="3F - 3Freaks">3F - 3Freaks</option>
+                </select>
+                <select id="dateFilter" class="filter-select">
+                    <option value="all">Wszystkie daty</option>
+                    <option value="upcoming">Nadchodzące mecze</option>
+                    <option value="past">Zakończone mecze</option>
+                    <option value="today">Dzisiejsze mecze</option>
+                </select>
+            </div>
+            <div class="sort-container">
+                <select id="sortOrder" class="filter-select">
+                    <option value="newest">Od najnowszych</option>
+                    <option value="oldest">Od najstarszych</option>
+                </select>
+            </div>
+        </div>
         <button class="refresh-btn" onclick="loadData(true)">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
                 <path d="M21.5 2v6h-6M2.5 22v-6h6M21.5 22a10 10 0 0 0-10-10 10 10 0 0 0-1.74.16M2.5 2a10 10 0 0 0 10 10 10 10 0 0 0 1.74-.16"></path>
@@ -520,9 +670,131 @@
             }
 
             const container = document.getElementById('schedule-container');
+            let matchesByDate = processMatchData(data);
+            
+            // Apply filters and sorting
+            applyFiltersAndSort(matchesByDate);
+            
+            // Setup filter and sort event listeners
+            setupFilterListeners(data);
+        }
+
+        function processMatchData(data) {
+            const matchesByDate = {};
+            const headers = data[0];
+            for (let i = 1; i < data.length; i++) {
+                const row = data[i];
+                if (row.length <= 0) continue;
+                
+                const date = row[0].trim();
+                if (!date) continue;
+                
+                if (!matchesByDate[date]) {
+                    matchesByDate[date] = [];
+                }
+                matchesByDate[date].push(row);
+            }
+            return matchesByDate;
+        }
+
+        function applyFiltersAndSort(matchesByDate) {
+            const container = document.getElementById('schedule-container');
             container.innerHTML = '';
 
-            const headers = data[0];
+            const teamFilter = document.getElementById('teamFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            const sortOrder = document.getElementById('sortOrder').value;
+
+            let filteredDates = Object.keys(matchesByDate);
+
+            // Apply date filter
+            filteredDates = filteredDates.filter(date => {
+                const [day, month, year] = date.split('.').map(Number);
+                const matchDate = new Date(year, month - 1, day);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                switch (dateFilter) {
+                    case 'upcoming':
+                        return matchDate >= today;
+                    case 'past':
+                        return matchDate < today;
+                    case 'today':
+                        return matchDate.getTime() === today.getTime();
+                    default:
+                        return true;
+                }
+            });
+
+            // Apply sort for dates
+            filteredDates.sort((a, b) => {
+                const [dayA, monthA, yearA] = a.split('.').map(Number);
+                const [dayB, monthB, yearB] = b.split('.').map(Number);
+                const dateA = new Date(yearA, monthA - 1, dayA);
+                const dateB = new Date(yearB, monthB - 1, dayB);
+                return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+            });
+
+            let hasResults = false;
+
+            filteredDates.forEach(date => {
+                let filteredMatches = matchesByDate[date].filter(match => {
+                    const team1Full = `${match[2]} - ${match[3]}`;
+                    const team2Full = `${match[8]} - ${match[7]}`;
+                    return !teamFilter || team1Full === teamFilter || team2Full === teamFilter;
+                });
+
+                // Sort matches by time within each day
+                filteredMatches.sort((a, b) => {
+                    const timeA = a[1].split(' - ')[0]; // Get start time of match A
+                    const timeB = b[1].split(' - ')[0]; // Get start time of match B
+                    const [hoursA, minutesA] = timeA.split(':').map(Number);
+                    const [hoursB, minutesB] = timeB.split(':').map(Number);
+                    return (hoursA * 60 + minutesA) - (hoursB * 60 + minutesB);
+                });
+
+                if (filteredMatches.length > 0) {
+                    hasResults = true;
+                    displayDateHeader(date, container);
+                    filteredMatches.forEach(match => displayMatch(match, container));
+                }
+            });
+
+            if (!hasResults) {
+                const noResults = document.createElement('div');
+                noResults.className = 'no-results';
+                noResults.textContent = 'Nie znaleziono meczy spełniających kryteria wyszukiwania';
+                container.appendChild(noResults);
+            }
+        }
+
+        function setupFilterListeners(data) {
+            const teamFilter = document.getElementById('teamFilter');
+            const dateFilter = document.getElementById('dateFilter');
+            const sortOrder = document.getElementById('sortOrder');
+
+            const applyFilters = () => {
+                const matchesByDate = processMatchData(data);
+                applyFiltersAndSort(matchesByDate);
+            };
+
+            teamFilter.addEventListener('input', applyFilters);
+            dateFilter.addEventListener('change', applyFilters);
+            sortOrder.addEventListener('change', applyFilters);
+        }
+
+        function displayDateHeader(date, container) {
+            const [day, month, year] = date.split('.').map(Number);
+            const dateObj = new Date(year, month - 1, day);
+            const dayOfWeek = dateObj.toLocaleDateString('pl-PL', { weekday: 'long' });
+            
+            const dateHeader = document.createElement('div');
+            dateHeader.className = 'date-header';
+            dateHeader.textContent = `${dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)}, ${date}`;
+            container.appendChild(dateHeader);
+        }
+
+        function displayMatch(match, container) {
             const dateIndex = 0;
             const timeIndex = 1;
             const team1ClassIndex = 2;
@@ -535,149 +807,103 @@
             const courtIndex = 9;
             const matchHeaderIndex = 10; // Nowa kolumna z nagłówkiem meczu (V)
 
-            const matchesByDate = {};
-            for (let i = 1; i < data.length; i++) {
-                const row = data[i];
-                if (row.length <= dateIndex) continue;
-                
-                const date = row[dateIndex].trim();
-                if (!date) continue;
-                
-                if (!matchesByDate[date]) {
-                    matchesByDate[date] = [];
-                }
-                matchesByDate[date].push(row);
+            const matchDiv = document.createElement('div');
+            matchDiv.className = 'match-container';
+            matchDiv.setAttribute('data-date', match[dateIndex]);
+            matchDiv.setAttribute('data-time', match[timeIndex]);
+            
+            // Sprawdź status meczu
+            updateLiveStatus(matchDiv);
+
+            // Dodaj nagłówek meczu jeśli istnieje
+            if (match[matchHeaderIndex] && match[matchHeaderIndex].trim() !== '') {
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'match-header';
+                headerDiv.textContent = match[matchHeaderIndex];
+                matchDiv.appendChild(headerDiv);
             }
-
-            const sortedDates = Object.keys(matchesByDate).sort((a, b) => {
-                const [dayA, monthA, yearA] = a.split('.').map(Number);
-                const [dayB, monthB, yearB] = b.split('.').map(Number);
-                const dateA = new Date(yearA, monthA - 1, dayA);
-                const dateB = new Date(yearB, monthB - 1, dayB);
-                return dateB - dateA;
-            });
-
-            sortedDates.forEach(date => {
-                const [day, month, year] = date.split('.').map(Number);
-                const dateObj = new Date(year, month - 1, day);
-                const dayOfWeek = dateObj.toLocaleDateString('pl-PL', { weekday: 'long' });
+            
+            // Team 1
+            const team1Div = document.createElement('div');
+            team1Div.className = 'team home';
+            const team1Class = match[team1ClassIndex] || '';
+            const team1Name = match[team1NameIndex] || '';
+            team1Div.textContent = team1Class && team1Name ? `${team1Class} - ${team1Name}` : team1Name;
+            matchDiv.appendChild(team1Div);
+            
+            // Score container
+            const scoreDiv = document.createElement('div');
+            scoreDiv.className = 'score';
+            
+            // Check if the match has been played (has scores)
+            const hasScores = match[sets1Index] && match[sets2Index] && 
+                            (match[sets1Index].trim() !== '' || match[sets2Index].trim() !== '');
+            
+            if (hasScores) {
+                const scoreValue = document.createElement('div');
+                scoreValue.className = 'score-value';
+                scoreValue.textContent = `${match[sets1Index] || '0'} : ${match[sets2Index] || '0'}`;
+                scoreDiv.appendChild(scoreValue);
                 
-                const dateHeader = document.createElement('div');
-                dateHeader.className = 'date-header';
-                dateHeader.textContent = `${dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)}, ${date}`;
-                container.appendChild(dateHeader);
+                if (match[pointsIndex] && match[pointsIndex].trim() !== '') {
+                    const pointsDiv = document.createElement('div');
+                    pointsDiv.className = 'points-details';
+                    pointsDiv.textContent = match[pointsIndex];
+                    scoreDiv.appendChild(pointsDiv);
+                }
+            } else {
+                const vsText = document.createElement('div');
+                vsText.textContent = 'vs';
+                scoreDiv.appendChild(vsText);
                 
-                matchesByDate[date].sort((a, b) => {
-                    const timeA = a[timeIndex].split(' - ')[0];
-                    const timeB = b[timeIndex].split(' - ')[0];
-                    
-                    const [hoursA, minutesA] = timeA.split(':').map(Number);
-                    const [hoursB, minutesB] = timeB.split(':').map(Number);
-                    
-                    if (hoursA !== hoursB) return hoursA - hoursB;
-                    return minutesA - minutesB;
-                });
-                
-                matchesByDate[date].forEach(match => {
-                    const matchDiv = document.createElement('div');
-                    matchDiv.className = 'match-container';
-                    matchDiv.setAttribute('data-date', match[dateIndex]);
-                    matchDiv.setAttribute('data-time', match[timeIndex]);
-                    
-                    // Sprawdź status meczu
-                    updateLiveStatus(matchDiv);
-
-                    // Dodaj nagłówek meczu jeśli istnieje
-                    if (match[matchHeaderIndex] && match[matchHeaderIndex].trim() !== '') {
-                        const headerDiv = document.createElement('div');
-                        headerDiv.className = 'match-header';
-                        headerDiv.textContent = match[matchHeaderIndex];
-                        matchDiv.appendChild(headerDiv);
-                    }
-                    
-                    // Team 1
-                    const team1Div = document.createElement('div');
-                    team1Div.className = 'team home';
-                    const team1Class = match[team1ClassIndex] || '';
-                    const team1Name = match[team1NameIndex] || '';
-                    team1Div.textContent = team1Class && team1Name ? `${team1Class} - ${team1Name}` : team1Name;
-                    matchDiv.appendChild(team1Div);
-                    
-                    // Score container
-                    const scoreDiv = document.createElement('div');
-                    scoreDiv.className = 'score';
-                    
-                    // Check if the match has been played (has scores)
-                    const hasScores = match[sets1Index] && match[sets2Index] && 
-                                    (match[sets1Index].trim() !== '' || match[sets2Index].trim() !== '');
-                    
-                    if (hasScores) {
-                        const scoreValue = document.createElement('div');
-                        scoreValue.className = 'score-value';
-                        scoreValue.textContent = `${match[sets1Index] || '0'} : ${match[sets2Index] || '0'}`;
-                        scoreDiv.appendChild(scoreValue);
-                        
-                        if (match[pointsIndex] && match[pointsIndex].trim() !== '') {
-                            const pointsDiv = document.createElement('div');
-                            pointsDiv.className = 'points-details';
-                            pointsDiv.textContent = match[pointsIndex];
-                            scoreDiv.appendChild(pointsDiv);
-                        }
-                    } else {
-                        const vsText = document.createElement('div');
-                        vsText.textContent = 'vs';
-                        scoreDiv.appendChild(vsText);
-                        
-                        // Add Coming Up badge for matches that haven't been played yet
-                        const comingUpBadge = document.createElement('div');
-                        comingUpBadge.className = 'coming-up-badge';
-                        comingUpBadge.textContent = 'Coming Up';
-                        matchDiv.appendChild(comingUpBadge);
-                    }
-                    
-                    matchDiv.appendChild(scoreDiv);
-                    
-                    // Team 2
-                    const team2Div = document.createElement('div');
-                    team2Div.className = 'team away';
-                    const team2Class = match[team2ClassIndex] || '';
-                    const team2Name = match[team2NameIndex] || '';
-                    team2Div.textContent = team2Class && team2Name ? `${team2Class} - ${team2Name}` : team2Name;
-                    matchDiv.appendChild(team2Div);
-                    
-                    // Match info
-                    const infoDiv = document.createElement('div');
-                    infoDiv.className = 'match-info';
-                    
-                    const timeDiv = document.createElement('div');
-                    timeDiv.className = 'match-time';
-                    timeDiv.innerHTML = `
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                        ${match[timeIndex]}
-                    `;
-                    infoDiv.appendChild(timeDiv);
-                    
-                    if (match[courtIndex] && match[courtIndex].trim() !== '') {
-                        const courtDiv = document.createElement('div');
-                        courtDiv.className = 'match-location';
-                        courtDiv.innerHTML = `
-                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                                <path d="M12 4v16"></path>
-                                <path d="M2 8h20"></path>
-                                <path d="M2 16h20"></path>
-                            </svg>
-                            Boisko ${match[courtIndex]}
-                        `;
-                        infoDiv.appendChild(courtDiv);
-                    }
-                    
-                    matchDiv.appendChild(infoDiv);
-                    container.appendChild(matchDiv);
-                });
-            });
+                // Add Coming Up badge for matches that haven't been played yet
+                const comingUpBadge = document.createElement('div');
+                comingUpBadge.className = 'coming-up-badge';
+                comingUpBadge.textContent = 'Coming Up';
+                matchDiv.appendChild(comingUpBadge);
+            }
+            
+            matchDiv.appendChild(scoreDiv);
+            
+            // Team 2
+            const team2Div = document.createElement('div');
+            team2Div.className = 'team away';
+            const team2Class = match[team2ClassIndex] || '';
+            const team2Name = match[team2NameIndex] || '';
+            team2Div.textContent = team2Class && team2Name ? `${team2Class} - ${team2Name}` : team2Name;
+            matchDiv.appendChild(team2Div);
+            
+            // Match info
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'match-info';
+            
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'match-time';
+            timeDiv.innerHTML = `
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                ${match[timeIndex]}
+            `;
+            infoDiv.appendChild(timeDiv);
+            
+            if (match[courtIndex] && match[courtIndex].trim() !== '') {
+                const courtDiv = document.createElement('div');
+                courtDiv.className = 'match-location';
+                courtDiv.innerHTML = `
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                        <path d="M12 4v16"></path>
+                        <path d="M2 8h20"></path>
+                        <path d="M2 16h20"></path>
+                    </svg>
+                    Boisko ${match[courtIndex]}
+                `;
+                infoDiv.appendChild(courtDiv);
+            }
+            
+            matchDiv.appendChild(infoDiv);
+            container.appendChild(matchDiv);
         }
 
         function updateLiveStatus(matchElement) {
