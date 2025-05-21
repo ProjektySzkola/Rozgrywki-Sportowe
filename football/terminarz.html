@@ -772,6 +772,89 @@
             }, 1000);
         });
     </script>
+    <script>
+        // ===== POWIADOMIENIA =====
+
+        // Zapytaj o zgodę na powiadomienia
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+
+        // Wyślij powiadomienie
+        function sendNotification(title, body) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, { body });
+            }
+        }
+
+        // Sprawdź i wyślij powiadomienie o meczu LIVE
+        function notifyLiveMatch(data) {
+            // Indeksy: 0-data, 1-godzina, 2-klasa1, 3-drużyna1, 7-klasa2, 6-drużyna2
+            const now = new Date();
+            const todayStr = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth()+1).toString().padStart(2, '0')}.${now.getFullYear()}`;
+            const nowMinutes = now.getHours() * 60 + now.getMinutes();
+            for (let i = 1; i < data.length; i++) {
+                const row = data[i];
+                const dateStr = row[0];
+                const timeStr = row[1];
+                if (!dateStr || !timeStr) continue;
+                if (dateStr !== todayStr) continue;
+                const [start] = timeStr.split(' - ');
+                if (!start) continue;
+                const [h, m] = start.split(':').map(Number);
+                const matchStart = h * 60 + m;
+                // LIVE jeśli mecz zaczyna się +/- 15 minut od teraz
+                if (Math.abs(matchStart - nowMinutes) <= 15) {
+                    const key = `notified_live_${dateStr}_${timeStr}`;
+                    if (!localStorage.getItem(key)) {
+                        sendNotification(
+                            'Mecz LIVE!',
+                            `Trwa mecz: ${row[2]} - ${row[3]} vs ${row[7]} - ${row[6]} (${dateStr} ${timeStr})`
+                        );
+                        localStorage.setItem(key, '1');
+                    }
+                }
+            }
+        }
+
+        // Sprawdź i wyślij powiadomienie dzień wcześniej o 16:00 o meczach na jutro
+        function scheduleTomorrowMatchesNotification(data) {
+            // Indeksy: 0-data, 1-godzina, 2-klasa1, 3-drużyna1, 7-klasa2, 6-drużyna2
+            const now = new Date();
+            if (now.getHours() >= 16) {
+                const todayKey = `notified_tomorrow_${now.toISOString().slice(0,10)}`;
+                if (localStorage.getItem(todayKey)) return;
+                // Szukaj meczów na jutro
+                const tomorrow = new Date(now);
+                tomorrow.setDate(now.getDate() + 1);
+                const tomorrowStr = `${tomorrow.getDate().toString().padStart(2, '0')}.${(tomorrow.getMonth()+1).toString().padStart(2, '0')}.${tomorrow.getFullYear()}`;
+                let matches = [];
+                for (let i = 1; i < data.length; i++) {
+                    const row = data[i];
+                    const dateStr = row[0];
+                    const timeStr = row[1];
+                    if (dateStr === tomorrowStr) {
+                        matches.push(`${row[2]} - ${row[3]} vs ${row[7]} - ${row[6]} (${timeStr})`);
+                    }
+                }
+                if (matches.length > 0) {
+                    sendNotification('Jutrzejsze mecze!', matches.join('\n'));
+                    localStorage.setItem(todayKey, '1');
+                }
+            }
+        }
+
+        // Po załadowaniu danych terminarza wywołuj powiadomienia
+        const _displaySchedule = displaySchedule;
+        displaySchedule = function(data) {
+            _displaySchedule(data);
+            requestNotificationPermission();
+            notifyLiveMatch(data);
+            scheduleTomorrowMatchesNotification(data);
+        };
+    </script>
 </body>
 </html>
 
