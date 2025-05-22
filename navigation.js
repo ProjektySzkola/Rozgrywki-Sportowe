@@ -76,6 +76,10 @@ function loadNavigation() {
                         </ul>
                     </li>
                     
+                    <li class="navigation-item" data-page="teams">
+                        <a href="../teams/teams.html" class="navigation-link">Drużyny</a>
+                    </li>
+                    
                     <li class="navigation-item" data-page="dokumenty">
                         <a href="../extra/dokumenty.html" class="navigation-link">Dokumenty</a>
                     </li>

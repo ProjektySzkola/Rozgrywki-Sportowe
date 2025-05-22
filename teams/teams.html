@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <link rel="icon" href="../cropped-logo-1.png" type="image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista drużyn i zawodników</title>
+    <link rel="stylesheet" href="../navigation.css">
+    <link rel="stylesheet" href="style_teams.css">
+</head>
+<body>
+<script src="../navigation.js"></script>
+<div class="container">
+    <h1>Lista drużyn i zawodników</h1>
+    <div style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+        <button id="prev-class-btn" class="refresh-btn" style="padding: 8px 14px;" aria-label="Poprzednia klasa">&#8592;</button>
+        <select id="class-select" class="refresh-btn" style="padding: 8px 16px; min-width: 110px; color: var(--dark); background: #fff; border: 1px solid var(--primary); border-radius: 50px; font-weight: 500; margin: 0 8px;">
+            <option value="">Wybierz klasę...</option>
+        </select>
+        <button id="next-class-btn" class="refresh-btn" style="padding: 8px 14px;" aria-label="Następna klasa">&#8594;</button>
+    </div>
+    <div id="loading" class="loading">Ładowanie danych...</div>
+    <div id="error" class="error" style="display: none;"></div>
+    <div id="teams-list"></div>
+</div>
+<script>
+const SPREADSHEET_ID = '15q06r0qd-UE8Wna1tRJxlQ2biZz-PIPxNntGX4uQC0w';
+const TEAMS_RANGE = 'teams!A:E'; // Zmieniono zakres na A:E
+const DISCIPLINES_RANGE = 'teams!H1:N15';
+const SCHEDULE_RANGE = 'Dane_Strona_Siatka!Q:AA';
+const BASKETBALL_RANGE = 'Dane_Strona!L:R';  // Add this line
+const SOCCER_RANGE = 'Dane_Strona_Noga!V2:AE14';
+
+const FULL_UPDATE_INTERVAL = 300000; // 5 minutes
+
+let classOrder = [];
+let classTeams = {};
+let currentClassIdx = 0;
+let disciplinesData = {}; // { [klasa]: { basket: bool, volley: bool, soccer: bool, members: [] } }
+let scheduleData = []; // przechowuj dane terminarza
+let lastUpdateTime = null;
+let basketballRefreshInterval;
+
+function loadTeams() {
+    console.log('%c[Teams] Loading teams data...', 'color: #4361ee; font-weight: bold;');
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('error').style.display = 'none';
+    document.getElementById('teams-list').innerHTML = '';
+    classOrder = [];
+    classTeams = {};
+    currentClassIdx = 0;
+    disciplinesData = {};
+    scheduleData = [];
+
+    // Pobierz dane drużyn, dyscyplin i terminarza równolegle
+    Promise.all([
+        fetch(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${TEAMS_RANGE.split('!')[0]}&range=${TEAMS_RANGE.split('!')[1]}`)
+            .then(response => {
+                console.log('%c[Teams] Teams data fetched', 'color: #2ed573');
+                return response.text();
+            }),
+        fetch(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${DISCIPLINES_RANGE.split('!')[0]}&range=${DISCIPLINES_RANGE.split('!')[1]}`)
+            .then(response => {
+                console.log('%c[Teams] Disciplines data fetched', 'color: #2ed573');
+                return response.text();
+            }),
+        fetch(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SCHEDULE_RANGE.split('!')[0]}&range=${SCHEDULE_RANGE.split('!')[1]}`)
+            .then(response => {
+                console.log('%c[Teams] Schedule data fetched', 'color: #2ed573');
+                return response.text();
+            })
+    ])
+    .then(([teamsCsv, discCsv, scheduleCsv]) => {
+        document.getElementById('loading').style.display = 'none';
+        console.log('%c[Teams] Processing data...', 'color: #4361ee');
+        const teamsData = csvToArray(teamsCsv);
+        const discData = csvToArray(discCsv);
+        scheduleData = csvToArray(scheduleCsv);
+        prepareTeams(teamsData);
+        prepareDisciplines(discData, teamsData);
+        populateDropdown();
+        showCurrentClass();
+    })
+    .catch(error => {
+        console.error('%c[Teams] Error:', 'color: #ff4757', error);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error').style.display = 'block';
+        document.getElementById('error').textContent = 'Wystąpił błąd: ' + error.message;
+    });
+}
+
+function csvToArray(csvText) {
+    const lines = csvText.split('\n').filter(l => l.trim().length > 0);
+    return lines.map(line => {
+        const values = [];
+        let current = '';
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                values.push(current);
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+        values.push(current);
+        return values;
+    });
+}
+
+function prepareTeams(data) {
+    if (!data || data.length < 2) {
+        document.getElementById('error').style.display = 'block';
+        document.getElementById('error').textContent = 'Brak danych do wyświetlenia';
+        return;
+    }
+    const headers = data[0];
+    const nameIdx = headers.findIndex(h => h.toLowerCase().includes('nazwa'));
+    const imieIdx = headers.findIndex(h => h.toLowerCase().includes('imię'));
+    const nazwiskoIdx = headers.findIndex(h => h.toLowerCase().includes('nazwisko'));
+    const klasaIdx = headers.findIndex(h => h.toLowerCase().includes('klasa'));
+    const kapitanIdx = headers.findIndex(h => h.toLowerCase().includes('kapitan'));
+    classTeams = {};
+    for (let i = 1; i < data.length; i++) {
+        const row = data[i];
+        const klasa = row[klasaIdx] || 'Brak klasy';
+        const teamName = row[nameIdx] || 'Nieznana drużyna';
+        if (!classTeams[klasa]) classTeams[klasa] = {};
+        if (!classTeams[klasa][teamName]) classTeams[klasa][teamName] = [];
+        classTeams[klasa][teamName].push({
+            imie: row[imieIdx] || '',
+            nazwisko: row[nazwiskoIdx] || '',
+            kapitan: (row[kapitanIdx] || '').toLowerCase() === 'true'
+        });
+    }
+    classOrder = Object.keys(classTeams);
+    currentClassIdx = 0;
+}
+
+function prepareDisciplines(discData, teamsData) {
+    // discData: [ [klasa, nazwa, basket, volley, soccer, grupa_basket, grupa_volley], ... ]
+    // teamsData: do pobrania zawodników
+    // Nagłówki: H1: Klasa, I1: Nazwa, J1: Koszykówka, K1: Siatkówka, L1: Piłka Nożna, M1: Grupa Koszykówka, N1: Grupa Siatkówka
+    const header = discData[0];
+    const klasaIdx = 0;
+    const nazwaIdx = 1;
+    const basketIdx = 2;
+    const volleyIdx = 3;
+    const soccerIdx = 4;
+    const grupaBasketIdx = 5;
+    const grupaVolleyIdx = 6;
+
+    // Zbuduj mapę: klasa-nazwa => { basket, volley, soccer, grupaBasket, grupaVolley }
+    const discMap = {};
+    for (let i = 1; i < discData.length; i++) {
+        const row = discData[i];
+        const klasa = row[klasaIdx];
+        const nazwa = row[nazwaIdx];
+        discMap[`${klasa}|||${nazwa}`] = {
+            basket: row[basketIdx] === 'TRUE',
+            volley: row[volleyIdx] === 'TRUE',
+            soccer: row[soccerIdx] === 'TRUE',
+            grupaBasket: row[grupaBasketIdx] && row[grupaBasketIdx] !== 'NULL' && row[grupaBasketIdx] !== 'FALSE' ? row[grupaBasketIdx] : null,
+            grupaVolley: row[grupaVolleyIdx] && row[grupaVolleyIdx] !== 'NULL' && row[grupaVolleyIdx] !== 'FALSE' ? row[grupaVolleyIdx] : null
+        };
+    }
+
+    // Zbuduj mapę zawodników: klasa-nazwa => [zawodnicy]
+    const headers = teamsData[0];
+    const nameIdx = headers.findIndex(h => h.toLowerCase().includes('nazwa'));
+    const imieIdx = headers.findIndex(h => h.toLowerCase().includes('imię'));
+    const nazwiskoIdx = headers.findIndex(h => h.toLowerCase().includes('nazwisko'));
+    const klasaIdxT = headers.findIndex(h => h.toLowerCase().includes('klasa'));
+    const membersMap = {};
+    for (let i = 1; i < teamsData.length; i++) {
+        const row = teamsData[i];
+        const klasa = row[klasaIdxT] || 'Brak klasy';
+        const nazwa = row[nameIdx] || 'Nieznana drużyna';
+        const key = `${klasa}|||${nazwa}`;
+        if (!membersMap[key]) membersMap[key] = [];
+        membersMap[key].push(`${row[imieIdx] || ''} ${row[nazwiskoIdx] || ''}`.trim());
+    }
+
+    // Połącz dane
+    disciplinesData = {};
+    for (const key in discMap) {
+        const [klasa, nazwa] = key.split('|||');
+        if (!disciplinesData[klasa]) disciplinesData[klasa] = {};
+        disciplinesData[klasa][nazwa] = {
+            ...discMap[key],
+            members: membersMap[key] || []
+        };
+    }
+}
+
+function populateDropdown() {
+    const select = document.getElementById('class-select');
+    select.innerHTML = '<option value="">Wybierz klasę...</option>';
+    classOrder.forEach((klasa, idx) => {
+        const option = document.createElement('option');
+        option.value = idx;
+        option.textContent = klasa;
+        select.appendChild(option);
+    });
+    select.value = classOrder.length > 0 ? currentClassIdx : '';
+}
+
+function showCurrentClass() {
+    console.log(`%c[Teams] Showing class: ${classOrder[currentClassIdx]}`, 'color: #4361ee');
+    const teamsList = document.getElementById('teams-list');
+    teamsList.innerHTML = '';
+    if (classOrder.length === 0) return;
+    
+    // Declare matches here so it's available throughout the function
+    let matches = [];
+
+    document.getElementById('class-select').value = currentClassIdx;
+    const klasa = classOrder[currentClassIdx];
+    const teams = classTeams[klasa];
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.display = 'flex';
+    card.style.flexDirection = 'row';
+    card.style.alignItems = 'flex-start';
+    card.style.justifyContent = 'space-between';
+
+    const leftDiv = document.createElement('div');
+    leftDiv.style.flex = '1 1 0%';
+    leftDiv.style.width = '100%';
+
+    for (const [teamName, members] of Object.entries(teams)) {
+        const teamHeader = document.createElement('h2');
+        teamHeader.textContent = `${klasa} - ${teamName}`;
+        leftDiv.appendChild(teamHeader);
+
+        let dyscypliny = '';
+        const disc = (disciplinesData[klasa] && disciplinesData[klasa][teamName]) || {};
+        dyscypliny += disc.basket ? '🏀 ' : '';
+        dyscypliny += disc.volley ? '🏐 ' : '';
+        dyscypliny += disc.soccer ? '⚽ ' : '';
+        if (!dyscypliny) dyscypliny = '—';
+        const dyscDiv = document.createElement('div');
+        dyscDiv.style.marginBottom = '0.5em';
+        dyscDiv.textContent = `Dyscypliny: ${dyscypliny}`;
+        leftDiv.appendChild(dyscDiv);
+
+        if (disc.grupaBasket || disc.grupaVolley) {
+            const grupyDiv = document.createElement('div');
+            grupyDiv.style.marginBottom = '0.5em';
+            grupyDiv.style.display = 'flex';
+            grupyDiv.style.flexDirection = 'column';
+            grupyDiv.style.gap = '2px';
+            if (disc.grupaBasket) {
+                const basketDiv = document.createElement('span');
+                basketDiv.style.display = 'block';
+                basketDiv.style.background = 'rgba(67,97,238,0.07)';
+                basketDiv.style.borderRadius = '6px';
+                basketDiv.style.padding = '2px 8px';
+                basketDiv.style.marginBottom = '2px';
+                basketDiv.style.fontSize = '0.98em';
+                basketDiv.textContent = `Koszykówka: ${disc.grupaBasket}`;
+                grupyDiv.appendChild(basketDiv);
+            }
+            if (disc.grupaVolley) {
+                const volleyDiv = document.createElement('span');
+                volleyDiv.style.display = 'block';
+                volleyDiv.style.background = 'rgba(67,97,238,0.07)';
+                volleyDiv.style.borderRadius = '6px';
+                volleyDiv.style.padding = '2px 8px';
+                volleyDiv.style.fontSize = '0.98em';
+                volleyDiv.textContent = `Siatkówka: ${disc.grupaVolley}`;
+                grupyDiv.appendChild(volleyDiv);
+            }
+            leftDiv.appendChild(grupyDiv);
+        }
+
+        const zawodnicyNaglowek = document.createElement('div');
+        zawodnicyNaglowek.style.fontWeight = 'bold';
+        zawodnicyNaglowek.style.marginBottom = '0.2em';
+        zawodnicyNaglowek.textContent = 'Zawodnicy:';
+        leftDiv.appendChild(zawodnicyNaglowek);
+
+        const sortedMembers = [...members].sort((a, b) => {
+            const nazwA = (a.nazwisko || '').toLowerCase();
+            const nazwB = (b.nazwisko || '').toLowerCase();
+            if (nazwA < nazwB) return -1;
+            if (nazwA > nazwB) return 1;
+            const imieA = (a.imie || '').toLowerCase();
+            const imieB = (b.imie || '').toLowerCase();
+            if (imieA < imieB) return -1;
+            if (imieA > imieB) return 1;
+            return 0;
+        });
+        const ul = document.createElement('ul');
+        sortedMembers.forEach(player => {
+            const li = document.createElement('li');
+            li.textContent = `${player.imie} ${player.nazwisko}`;
+            if (player.kapitan) {
+                li.innerHTML += ' <span style="color:#4361ee;font-weight:bold;font-size:0.98em;">(kapitan)</span>';
+                li.style.fontWeight = 'bold';
+            }
+            ul.appendChild(li);
+        });
+        leftDiv.appendChild(ul);
+    }
+
+    // Dodaj logo po prawej stronie karty, większe
+    const logoDiv = document.createElement('div');
+    logoDiv.style.flex = '0 0 auto';
+    logoDiv.style.display = 'flex';
+    logoDiv.style.alignItems = 'flex-start';
+    logoDiv.style.justifyContent = 'flex-end';
+    logoDiv.style.marginLeft = '32px';
+    const logoImg = document.createElement('img');
+    logoImg.src = `./Loga/${klasa}.png`;
+    logoImg.alt = `Logo klasy ${klasa}`;
+    logoImg.style.maxWidth = '180px';
+    logoImg.style.maxHeight = '180px';
+    logoImg.style.objectFit = 'contain';
+    logoImg.style.borderRadius = '10px';
+    logoImg.onerror = function() {
+        this.onerror = null;
+        this.src = './Loga/brak.png';
+    };
+    logoDiv.appendChild(logoImg);
+
+    card.appendChild(leftDiv);
+    card.appendChild(logoDiv);
+
+    teamsList.appendChild(card);
+
+    // --- MECZE DLA DANEJ KLASY ---
+    if (scheduleData && scheduleData.length > 1) {
+        // Fill matches array
+        for (let i = 1; i < scheduleData.length; i++) {
+            const row = scheduleData[i];
+            if (!row || row.length < 9) continue;
+            if (row[2] === klasa || row[8] === klasa) {
+                matches.push(row);
+            }
+        }
+
+        if (matches.length > 0) {
+            // Add volleyball header
+            const volleyballHeader = document.createElement('h2');
+            volleyballHeader.textContent = 'Mecze siatkówki';
+            volleyballHeader.style.marginTop = '2.5rem';
+            volleyballHeader.style.marginBottom = '0.5rem';
+            volleyballHeader.style.color = 'var(--primary)';
+            volleyballHeader.style.fontSize = '1.3rem';
+            teamsList.appendChild(volleyballHeader);
+
+            // Sortuj po dacie i godzinie
+            matches.sort((a, b) => {
+                // data: 0, godzina: 1
+                const [dA, mA, yA] = a[0].split('.').map(Number);
+                const [dB, mB, yB] = b[0].split('.').map(Number);
+                const dateA = new Date(yA, mA - 1, dA);
+                const dateB = new Date(yB, mB - 1, dB);
+                if (dateA.getTime() !== dateB.getTime()) return dateA - dateB;
+                // porównaj godziny
+                const [hA, minA] = (a[1] || '').split(':').map(Number);
+                const [hB, minB] = (b[1] || '').split(':').map(Number);
+                return (hA * 60 + (minA || 0)) - (hB * 60 + (minB || 0));
+            });
+
+            matches.forEach(match => {
+                // Indeksy: 0-data, 1-godzina, 2-klasa1, 3-drużyna1, 4-sets1, 5-sets2, 6-points, 7-drużyna2, 8-klasa2, 9-court, 10-header
+                const matchDiv = document.createElement('div');
+                matchDiv.className = 'match-container';
+                matchDiv.setAttribute('data-date', match[0]);
+                matchDiv.setAttribute('data-time', match[1]);
+
+                // Nagłówek meczu jeśli istnieje
+                if (match[10] && match[10].trim() !== '') {
+                    const headerDiv = document.createElement('div');
+                    headerDiv.className = 'match-header';
+                    headerDiv.textContent = match[10];
+                    matchDiv.appendChild(headerDiv);
+                }
+
+                // Team 1
+                const team1Div = document.createElement('div');
+                team1Div.className = 'team home';
+                const team1Class = match[2] || '';
+                const team1Name = match[3] || '';
+                team1Div.textContent = team1Class && team1Name ? `${team1Class} - ${team1Name}` : team1Name;
+                // Podświetl jeśli to drużyna z aktualnej klasy
+                if (team1Class === klasa) {
+                    team1Div.style.background = 'rgba(67,97,238,0.18)';
+                    team1Div.style.color = 'var(--dark)';
+                    team1Div.style.fontWeight = 'bold';
+                }
+                matchDiv.appendChild(team1Div);
+
+                // Score container
+                const scoreDiv = document.createElement('div');
+                scoreDiv.className = 'score';
+
+                const hasScores = match[4] && match[5] && (match[4].trim() !== '' || match[5].trim() !== '');
+
+                if (hasScores) {
+                    const scoreValue = document.createElement('div');
+                    scoreValue.className = 'score-value';
+                    scoreValue.textContent = `${match[4] || '0'} : ${match[5] || '0'}`;
+                    scoreDiv.appendChild(scoreValue);
+
+                    if (match[6] && match[6].trim() !== '') {
+                        const pointsDiv = document.createElement('div');
+                        pointsDiv.className = 'points-details';
+                        pointsDiv.textContent = match[6];
+                        scoreDiv.appendChild(pointsDiv);
+                    }
+                } else {
+                    const vsText = document.createElement('div');
+                    vsText.textContent = 'vs';
+                    scoreDiv.appendChild(vsText);
+
+                    // Coming Up badge
+                    const comingUpBadge = document.createElement('div');
+                    comingUpBadge.className = 'coming-up-badge';
+                    comingUpBadge.textContent = 'Coming Up';
+                    matchDiv.appendChild(comingUpBadge);
+                }
+
+                matchDiv.appendChild(scoreDiv);
+
+                // Team 2
+                const team2Div = document.createElement('div');
+                team2Div.className = 'team away';
+                const team2Class = match[8] || '';
+                const team2Name = match[7] || '';
+                team2Div.textContent = team2Class && team2Name ? `${team2Class} - ${team2Name}` : team2Name;
+                // Podświetl jeśli to drużyna z aktualnej klasy
+                if (team2Class === klasa) {
+                    team2Div.style.background = 'rgba(67,97,238,0.18)';
+                    team2Div.style.color = 'var(--dark)';
+                    team2Div.style.fontWeight = 'bold';
+                }
+                matchDiv.appendChild(team2Div);
+
+                // Match info
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'match-info';
+
+                // Najpierw dzień (data z ikonką), potem godzina (z ikonką), na końcu boisko
+                // Data
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'match-date';
+                dateDiv.innerHTML = `
+                    <svg class="icon" style="margin-right:2px;" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <rect x="3" y="6" width="18" height="15" rx="2"></rect>
+                        <line x1="16" y1="3" x2="16" y2="7"></line>
+                        <line x1="8" y1="3" x2="8" y2="7"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    ${match[0]}
+                `;
+                infoDiv.appendChild(dateDiv);
+
+                // Godzina
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'match-time';
+                timeDiv.innerHTML = `
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    ${match[1]}
+                `;
+                infoDiv.appendChild(timeDiv);
+
+                // Boisko
+                if (match[9] && match[9].trim() !== '') {
+                    const courtDiv = document.createElement('div');
+                    courtDiv.className = 'match-location';
+                    courtDiv.innerHTML = `
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                            <path d="M12 4v16"></path>
+                            <path d="M2 8h20"></path>
+                            <path d="M2 16h20"></path>
+                        </svg>
+                        Boisko ${match[9]}
+                    `;
+                    infoDiv.appendChild(courtDiv);
+                }
+
+                matchDiv.appendChild(infoDiv);
+
+                teamsList.appendChild(matchDiv);
+            });
+        }
+    }
+
+    // Always call renderBasketballPlan regardless of matches length
+    renderBasketballPlan(klasa, teams);
+    renderSoccerPlan(klasa, teams);
+    
+    updateNavButtons();
+}
+
+        // --- KONIEC planu siatkówki ---
+
+        // === PLAN MECZÓW KOSZYKÓWKI (jak w terminarz.html z koszykówka) ===
+        // Funkcja renderująca plan koszykówki dla danej klasy (przenieś poza showCurrentClass)
+        function renderBasketballPlan(klasa, teams) {
+            console.log(`%c[Teams] Rendering basketball matches for class: ${klasa}`, 'color: #4361ee');
+            const teamsList = document.getElementById('teams-list');
+            
+            fetch(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${BASKETBALL_RANGE.split('!')[0]}&range=${BASKETBALL_RANGE.split('!')[1]}`)
+                .then(response => response.text())
+                .then(csv => {
+                    const basketballData = csvToArray(csv);
+                    console.log('%c[Teams] Basketball data fetched', 'color: #2ed573');
+                    
+                    const matches = [];
+                    for (let i = 1; i < basketballData.length; i++) {
+                        const row = basketballData[i];
+                        if (!row || row.length < 6) continue; // Changed from 7 to 6 for new structure
+                        
+                        // Map new structure:
+                        // 0: Data, 1: Godzina, 2: Team 1, 3: wynik_team1, 4: wynik_team2, 5: Team 2, 6: Nagłówek
+                        const mappedRow = [
+                            row[0], // data
+                            row[1], // godzina
+                            row[2].split(' - ')[0] || '', // klasa1 (extracted from Team 1)
+                            row[2].split(' - ')[1] || '', // drużyna1 (extracted from Team 1)
+                            row[3], // wynik1
+                            row[4], // wynik2
+                            '', // points (empty as not provided)
+                            row[5].split(' - ')[1] || '', // drużyna2 (extracted from Team 2)
+                            row[5].split(' - ')[0] || '', // klasa2 (extracted from Team 2)
+                            '', // court (empty as not provided)
+                            row[6] || '' // nagłówek
+                        ];
+
+                        // Check if this match belongs to current class
+                        const classTeams = Object.keys(teams || {});
+                        const isTeam1Match = classTeams.some(teamName => 
+                            `${klasa} - ${teamName}` === row[2]);
+                        const isTeam2Match = classTeams.some(teamName => 
+                            `${klasa} - ${teamName}` === row[5]);
+                        
+                        if (isTeam1Match || isTeam2Match) {
+                            matches.push(mappedRow);
+                        }
+                    }
+
+                    if (matches.length > 0) {
+                        const basketballHeader = document.createElement('h2');
+                        basketballHeader.textContent = 'Mecze koszykówki';
+                        basketballHeader.style.marginTop = '2.5rem';
+                        basketballHeader.style.marginBottom = '0.5rem';
+                        basketballHeader.style.color = 'var(--primary)';
+                        basketballHeader.style.fontSize = '1.3rem';
+                        teamsList.appendChild(basketballHeader);
+
+                        displayBasketballMatches(matches, teamsList, klasa);
+                    }
+                });
+        }
+
+        function displayBasketballMatches(matches, container, klasa) {
+            console.log(`%c[Teams] Displaying ${matches.length} matches for class ${klasa}`, 'color: #4361ee');
+            
+            // Sort matches by date and time
+            matches.sort((a, b) => {
+                const [dayA, monthA, yearA] = a[0].split('.').map(Number);
+                const [dayB, monthB, yearB] = b[0].split('.').map(Number);
+                const dateA = new Date(yearA, monthA-1, dayA);
+                const dateB = new Date(yearB, monthB-1, dayB);
+                if (dateA.getTime() !== dateB.getTime()) return dateA - dateB;
+                const [hA, minA] = (a[1] || '').split(':').map(Number);
+                const [hB, minB] = (b[1] || '').split(':').map(Number);
+                return (hA * 60 + (minA || 0)) - (hB * 60 + (minB || 0));
+            });
+
+            matches.forEach(match => {
+                // Indeksy: 0-data, 1-godzina, 2-klasa1, 3-drużyna1, 4-sets1, 5-sets2, 6-points, 7-drużyna2, 8-klasa2, 9-court, 10-header
+                const matchDiv = document.createElement('div');
+                matchDiv.className = 'match-container';
+                matchDiv.setAttribute('data-date', match[0]);
+                matchDiv.setAttribute('data-time', match[1]);
+
+                // Nagłówek meczu jeśli istnieje
+                if (match[10] && match[10].trim() !== '') {
+                    const headerDiv = document.createElement('div');
+                    headerDiv.className = 'match-header';
+                    headerDiv.textContent = match[10];
+                    matchDiv.appendChild(headerDiv);
+                }
+
+                // Team 1
+                const team1Div = document.createElement('div');
+                team1Div.className = 'team home';
+                const team1Class = match[2] || '';
+                const team1Name = match[3] || '';
+                team1Div.textContent = team1Class && team1Name ? `${team1Class} - ${team1Name}` : team1Name;
+                // Podświetl jeśli to drużyna z aktualnej klasy
+                if (team1Class === klasa) {
+                    team1Div.style.background = 'rgba(67,97,238,0.18)';
+                    team1Div.style.color = 'var(--dark)';
+                    team1Div.style.fontWeight = 'bold';
+                }
+                matchDiv.appendChild(team1Div);
+
+                // Score container
+                const scoreDiv = document.createElement('div');
+                scoreDiv.className = 'score';
+
+                const hasScores = match[4] && match[5] && (match[4].trim() !== '' || match[5].trim() !== '');
+
+                if (hasScores) {
+                    const scoreValue = document.createElement('div');
+                    scoreValue.className = 'score-value';
+                    scoreValue.textContent = `${match[4] || '0'} : ${match[5] || '0'}`;
+                    scoreDiv.appendChild(scoreValue);
+
+                    if (match[6] && match[6].trim() !== '') {
+                        const pointsDiv = document.createElement('div');
+                        pointsDiv.className = 'points-details';
+                        pointsDiv.textContent = match[6];
+                        scoreDiv.appendChild(pointsDiv);
+                    }
+                } else {
+                    const vsText = document.createElement('div');
+                    vsText.textContent = 'vs';
+                    scoreDiv.appendChild(vsText);
+
+                    // Coming Up badge
+                    const comingUpBadge = document.createElement('div');
+                    comingUpBadge.className = 'coming-up-badge';
+                    comingUpBadge.textContent = 'Coming Up';
+                    matchDiv.appendChild(comingUpBadge);
+                }
+
+                matchDiv.appendChild(scoreDiv);
+
+                // Team 2
+                const team2Div = document.createElement('div');
+                team2Div.className = 'team away';
+                const team2Class = match[8] || '';
+                const team2Name = match[7] || '';
+                team2Div.textContent = team2Class && team2Name ? `${team2Class} - ${team2Name}` : team2Name;
+                // Podświetl jeśli to drużyna z aktualnej klasy
+                if (team2Class === klasa) {
+                    team2Div.style.background = 'rgba(67,97,238,0.18)';
+                    team2Div.style.color = 'var(--dark)';
+                    team2Div.style.fontWeight = 'bold';
+                }
+                matchDiv.appendChild(team2Div);
+
+                // Match info
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'match-info';
+
+                // Najpierw dzień (data z ikonką), potem godzina (z ikonką), na końcu boisko
+                // Data
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'match-date';
+                dateDiv.innerHTML = `
+                    <svg class="icon" style="margin-right:2px;" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <rect x="3" y="6" width="18" height="15" rx="2"></rect>
+                        <line x1="16" y1="3" x2="16" y2="7"></line>
+                        <line x1="8" y1="3" x2="8" y2="7"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    ${match[0]}
+                `;
+                infoDiv.appendChild(dateDiv);
+
+                // Godzina
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'match-time';
+                timeDiv.innerHTML = `
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    ${match[1]}
+                `;
+                infoDiv.appendChild(timeDiv);
+
+                // Boisko
+                if (match[9] && match[9].trim() !== '') {
+                    const courtDiv = document.createElement('div');
+                    courtDiv.className = 'match-location';
+                    courtDiv.innerHTML = `
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                            <path d="M12 4v16"></path>
+                            <path d="M2 8h20"></path>
+                            <path d="M2 16h20"></path>
+                        </svg>
+                        Boisko ${match[9]}
+                    `;
+                    infoDiv.appendChild(courtDiv);
+                }
+
+                matchDiv.appendChild(infoDiv);
+
+                container.appendChild(matchDiv);
+            });
+        }
+
+        // === PLAN MECZÓW PIŁKI NOŻNEJ ===
+        function renderSoccerPlan(klasa, teams) {
+            console.log(`%c[Teams] Rendering soccer matches for class: ${klasa}`, 'color: #4361ee');
+            const teamsList = document.getElementById('teams-list');
+            
+            fetch(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SOCCER_RANGE.split('!')[0]}&range=${SOCCER_RANGE.split('!')[1]}`)
+                .then(response => response.text())
+                .then(csv => {
+                    const soccerData = csvToArray(csv);
+                    console.log('%c[Teams] Soccer data fetched', 'color: #2ed573');
+                    
+                    const matches = [];
+                    for (let i = 1; i < soccerData.length; i++) {
+                        const row = soccerData[i];
+                        if (!row || row.length < 9) continue;
+                        
+                        // Map new structure:
+                        // ID, Data, Godzina, klasa team 1, Team 1, Wynik_team1, wynik_team2, Team 2, klasa team 2, Nagłówek
+                        const mappedRow = [
+                            row[1], // data
+                            row[2], // godzina
+                            row[3], // klasa1
+                            row[4], // team1
+                            row[5], // wynik1
+                            row[6], // wynik2
+                            '', // points (empty)
+                            row[7], // team2
+                            row[8], // klasa2
+                            '', // court (empty)
+                            row[9] || '' // nagłówek
+                        ];
+
+                        if (row[3] === klasa || row[8] === klasa) {
+                            matches.push(mappedRow);
+                        }
+                    }
+
+                    if (matches.length > 0) {
+                        const soccerHeader = document.createElement('h2');
+                        soccerHeader.textContent = 'Mecze piłki nożnej';
+                        soccerHeader.style.marginTop = '2.5rem';
+                        soccerHeader.style.marginBottom = '0.5rem';
+                        soccerHeader.style.color = 'var(--primary)';
+                        soccerHeader.style.fontSize = '1.3rem';
+                        teamsList.appendChild(soccerHeader);
+
+                        displaySoccerMatches(matches, teamsList, klasa);
+                    }
+                });
+        }
+
+        function displaySoccerMatches(matches, container, klasa) {
+            console.log(`%c[Teams] Displaying ${matches.length} soccer matches for class ${klasa}`, 'color: #4361ee');
+            
+            // Sort matches by date and time
+            matches.sort((a, b) => {
+                const [dayA, monthA, yearA] = a[0].split('.').map(Number);
+                const [dayB, monthB, yearB] = b[0].split('.').map(Number);
+                const dateA = new Date(yearA, monthA-1, dayA);
+                const dateB = new Date(yearB, monthB-1, dayB);
+                if (dateA.getTime() !== dateB.getTime()) return dateA - dateB;
+                const [hA, minA] = (a[1] || '').split(':').map(Number);
+                const [hB, minB] = (b[1] || '').split(':').map(Number);
+                return (hA * 60 + (minA || 0)) - (hB * 60 + (minB || 0));
+            });
+
+            matches.forEach(match => {
+                // Indeksy: 0-data, 1-godzina, 2-klasa1, 3-drużyna1, 4-sets1, 5-sets2, 6-points, 7-drużyna2, 8-klasa2, 9-court, 10-header
+                const matchDiv = document.createElement('div');
+                matchDiv.className = 'match-container';
+                matchDiv.setAttribute('data-date', match[0]);
+                matchDiv.setAttribute('data-time', match[1]);
+
+                // Nagłówek meczu jeśli istnieje
+                if (match[10] && match[10].trim() !== '') {
+                    const headerDiv = document.createElement('div');
+                    headerDiv.className = 'match-header';
+                    headerDiv.textContent = match[10];
+                    matchDiv.appendChild(headerDiv);
+                }
+
+                // Team 1
+                const team1Div = document.createElement('div');
+                team1Div.className = 'team home';
+                const team1Class = match[2] || '';
+                const team1Name = match[3] || '';
+                team1Div.textContent = team1Class && team1Name ? `${team1Class} - ${team1Name}` : team1Name;
+                // Podświetl jeśli to drużyna z aktualnej klasy
+                if (team1Class === klasa) {
+                    team1Div.style.background = 'rgba(67,97,238,0.18)';
+                    team1Div.style.color = 'var(--dark)';
+                    team1Div.style.fontWeight = 'bold';
+                }
+                matchDiv.appendChild(team1Div);
+
+                // Score container
+                const scoreDiv = document.createElement('div');
+                scoreDiv.className = 'score';
+
+                const hasScores = match[4] && match[5] && (match[4].trim() !== '' || match[5].trim() !== '');
+
+                if (hasScores) {
+                    const scoreValue = document.createElement('div');
+                    scoreValue.className = 'score-value';
+                    scoreValue.textContent = `${match[4] || '0'} : ${match[5] || '0'}`;
+                    scoreDiv.appendChild(scoreValue);
+
+                    if (match[6] && match[6].trim() !== '') {
+                        const pointsDiv = document.createElement('div');
+                        pointsDiv.className = 'points-details';
+                        pointsDiv.textContent = match[6];
+                        scoreDiv.appendChild(pointsDiv);
+                    }
+                } else {
+                    const vsText = document.createElement('div');
+                    vsText.textContent = 'vs';
+                    scoreDiv.appendChild(vsText);
+
+                    // Coming Up badge
+                    const comingUpBadge = document.createElement('div');
+                    comingUpBadge.className = 'coming-up-badge';
+                    comingUpBadge.textContent = 'Coming Up';
+                    matchDiv.appendChild(comingUpBadge);
+                }
+
+                matchDiv.appendChild(scoreDiv);
+
+                // Team 2
+                const team2Div = document.createElement('div');
+                team2Div.className = 'team away';
+                const team2Class = match[8] || '';
+                const team2Name = match[7] || '';
+                team2Div.textContent = team2Class && team2Name ? `${team2Class} - ${team2Name}` : team2Name;
+                // Podświetl jeśli to drużyna z aktualnej klasy
+                if (team2Class === klasa) {
+                    team2Div.style.background = 'rgba(67,97,238,0.18)';
+                    team2Div.style.color = 'var(--dark)';
+                    team2Div.style.fontWeight = 'bold';
+                }
+                matchDiv.appendChild(team2Div);
+
+                // Match info
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'match-info';
+
+                // Najpierw dzień (data z ikonką), potem godzina (z ikonką), na końcu boisko
+                // Data
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'match-date';
+                dateDiv.innerHTML = `
+                    <svg class="icon" style="margin-right:2px;" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <rect x="3" y="6" width="18" height="15" rx="2"></rect>
+                        <line x1="16" y1="3" x2="16" y2="7"></line>
+                        <line x1="8" y1="3" x2="8" y2="7"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    ${match[0]}
+                `;
+                infoDiv.appendChild(dateDiv);
+
+                // Godzina
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'match-time';
+                timeDiv.innerHTML = `
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    ${match[1]}
+                `;
+                infoDiv.appendChild(timeDiv);
+
+                // Boisko
+                if (match[9] && match[9].trim() !== '') {
+                    const courtDiv = document.createElement('div');
+                    courtDiv.className = 'match-location';
+                    courtDiv.innerHTML = `
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                            <path d="M12 4v16"></path>
+                            <path d="M2 8h20"></path>
+                            <path d="M2 16h20"></path>
+                        </svg>
+                        Boisko ${match[9]}
+                    `;
+                    infoDiv.appendChild(courtDiv);
+                }
+
+                matchDiv.appendChild(infoDiv);
+
+                container.appendChild(matchDiv);
+            });
+        }
+
+function updateNavButtons() {
+    document.getElementById('prev-class-btn').disabled = currentClassIdx <= 0;
+    document.getElementById('next-class-btn').disabled = currentClassIdx >= classOrder.length - 1;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadTeams();
+    document.getElementById('prev-class-btn').addEventListener('click', () => {
+        if (currentClassIdx > 0) {
+            currentClassIdx--;
+            showCurrentClass();
+        }
+    });
+    document.getElementById('next-class-btn').addEventListener('click', () => {
+        if (currentClassIdx < classOrder.length - 1) {
+            currentClassIdx++;
+            showCurrentClass();
+        }
+    });
+    document.getElementById('class-select').addEventListener('change', (e) => {
+        const idx = parseInt(e.target.value, 10);
+        if (!isNaN(idx) && idx >= 0 && idx < classOrder.length) {
+            currentClassIdx = idx;
+            showCurrentClass();
+        }
+    });
+});
+
+// Add at the very beginning of the file, after the last <script> tag:
+console.log('%c[Teams] Script loaded', 'color: #4361ee; font-weight: bold;');
+</script>
+</body>
+</html>
