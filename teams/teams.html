@@ -25,11 +25,13 @@
 </div>
 <script>
 const SPREADSHEET_ID = '15q06r0qd-UE8Wna1tRJxlQ2biZz-PIPxNntGX4uQC0w';
-const TEAMS_RANGE = 'teams!A:E'; // Zmieniono zakres na A:E
+const TEAMS_RANGE = 'teams!A:E';
 const DISCIPLINES_RANGE = 'teams!H1:N15';
 const SCHEDULE_RANGE = 'Dane_Strona_Siatka!Q:AA';
-const BASKETBALL_RANGE = 'Dane_Strona!L:R';  // Add this line
-const SOCCER_RANGE = 'Dane_Strona_Noga!V2:AE14';
+const BASKETBALL_RANGE = 'Dane_Strona!L:R';
+const SOCCER_RANGE = 'Dane_Strona_Noga!V2:AE14'; 
+
+// const SOCCER_RANGE = 'Dane_Strona_Noga!V2:AE14';
 
 const FULL_UPDATE_INTERVAL = 300000; // 5 minutes
 
@@ -42,47 +44,149 @@ let lastUpdateTime = null;
 let basketballRefreshInterval;
 
 function loadTeams() {
-    console.log('%c[Teams] Loading teams data...', 'color: #4361ee; font-weight: bold;');
+    console.log('%c[Teams] Starting data fetch...', 'color: #4361ee; font-weight: bold;');
+    console.group('Data Fetching');
+    
     document.getElementById('loading').style.display = 'block';
     document.getElementById('error').style.display = 'none';
     document.getElementById('teams-list').innerHTML = '';
+    
+    // Reset all data
     classOrder = [];
     classTeams = {};
     currentClassIdx = 0;
     disciplinesData = {};
     scheduleData = [];
 
-    // Pobierz dane drużyn, dyscyplin i terminarza równolegle
     Promise.all([
         fetch(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${TEAMS_RANGE.split('!')[0]}&range=${TEAMS_RANGE.split('!')[1]}`)
             .then(response => {
-                console.log('%c[Teams] Teams data fetched', 'color: #2ed573');
+                console.group('%c📊 Teams Data', 'color: #4361ee');
+                console.log('%c✓ Status:', 'color: #2ed573', response.status);
+                console.log('%c✓ Range:', 'color: #2ed573', TEAMS_RANGE);
+                console.log('%c✓ URL:', 'color: #2ed573', response.url);
+                console.groupEnd();
                 return response.text();
             }),
         fetch(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${DISCIPLINES_RANGE.split('!')[0]}&range=${DISCIPLINES_RANGE.split('!')[1]}`)
             .then(response => {
-                console.log('%c[Teams] Disciplines data fetched', 'color: #2ed573');
+                console.group('%c🎯 Disciplines Data', 'color: #4361ee');
+                console.log('%c✓ Status:', 'color: #2ed573', response.status);
+                console.log('%c✓ Range:', 'color: #2ed573', DISCIPLINES_RANGE);
+                console.log('%c✓ URL:', 'color: #2ed573', response.url);
+                console.groupEnd();
                 return response.text();
             }),
         fetch(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SCHEDULE_RANGE.split('!')[0]}&range=${SCHEDULE_RANGE.split('!')[1]}`)
             .then(response => {
-                console.log('%c[Teams] Schedule data fetched', 'color: #2ed573');
+                console.group('%c🏐 Volleyball Schedule', 'color: #4361ee');
+                console.log('%c✓ Status:', 'color: #2ed573', response.status);
+                console.log('%c✓ Range:', 'color: #2ed573', SCHEDULE_RANGE);
+                console.log('%c✓ URL:', 'color: #2ed573', response.url);
+                console.groupEnd();
                 return response.text();
+            }),
+        fetch(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${BASKETBALL_RANGE.split('!')[0]}&range=${BASKETBALL_RANGE.split('!')[1]}`)
+            .then((response) => { // Fixed: Added parentheses around response parameter
+                console.group('%c🏀 Basketball Schedule', 'color: #4361ee');
+                console.log('%c✓ Status:', 'color: #2ed573', response.status);
+                console.log('%c✓ Range:', 'color: #2ed573', BASKETBALL_RANGE);
+                console.log('%c✓ URL:', 'color: #2ed573', response.url);
+                console.groupEnd();
+                return response.text();
+            }),
+        fetch(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SOCCER_RANGE.split('!')[0]}&range=${SOCCER_RANGE.split('!')[1]}`)
+            .then(response => {
+                console.group('%c⚽ Soccer Schedule', 'color: #4361ee');
+                console.log('%c✓ Status:', 'color: #2ed573', response.status);
+                console.log('%c✓ Range:', 'color: #2ed573', SOCCER_RANGE);
+                console.log('%c✓ URL:', 'color: #2ed573', response.url);
+                console.groupEnd();
+                return response.text();
+            }),
+        fetch(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Main_Ranking&range=A1:F16`)
+            .then(response => response.text())
+            .then(csv => {
+                const data = csvToArray(csv);
+                console.group('%c🏆 Main Ranking Data', 'color: #4361ee');
+                console.log('%c✓ Raw data:', 'color: #2ed573', data);
+                
+                // Process and store main table data - skip header row (index 0)
+                window.mainTableData = data.slice(1).map(row => ({
+                    class: row[0] || '',
+                    teamName: row[1] || '',
+                    basketballPoints: parseInt(row[2] || '0'),
+                    volleyballPoints: parseInt(row[3] || '0'),
+                    footballPoints: parseInt(row[4] || '0'),
+                    totalPoints: parseInt(row[5] || '0')
+                }));
+                
+                console.log('%c✓ Processed data:', 'color: #2ed573', window.mainTableData);
+                console.table(window.mainTableData);
+                console.groupEnd();
             })
-    ])
-    .then(([teamsCsv, discCsv, scheduleCsv]) => {
+    ]) // Fixed: Added missing closing bracket
+    .then(([teamsCsv, discCsv, scheduleCsv, basketballCsv, soccerCsv]) => {
+        console.groupEnd();
+        console.group('%c📝 Data Processing', 'color: #4361ee; font-weight: bold');
+        
         document.getElementById('loading').style.display = 'none';
-        console.log('%c[Teams] Processing data...', 'color: #4361ee');
+        
         const teamsData = csvToArray(teamsCsv);
+        console.group('%c📊 Teams Data', 'color: #4361ee');
+        console.log('%c✓ Rows:', 'color: #2ed573', teamsData.length);
+        console.log('%c✓ Columns:', 'color: #2ed573', teamsData[0]?.length || 0);
+        console.log('%c✓ Headers:', 'color: #2ed573', teamsData[0]);
+        console.log('%c✓ Sample data:', 'color: #2ed573', teamsData.slice(1, 3));
+        console.groupEnd();
+        
         const discData = csvToArray(discCsv);
+        console.group('%c🎯 Disciplines Data', 'color: #4361ee');
+        console.log('%c✓ Rows:', 'color: #2ed573', discData.length);
+        console.log('%c✓ Columns:', 'color: #2ed573', discData[0]?.length || 0);
+        console.log('%c✓ Headers:', 'color: #2ed573', discData[0]);
+        console.log('%c✓ Sample data:', 'color: #2ed573', discData.slice(1, 3));
+        console.groupEnd();
+        
         scheduleData = csvToArray(scheduleCsv);
+        console.group('%c🏐 Volleyball Schedule', 'color: #4361ee');
+        console.log('%c✓ Rows:', 'color: #2ed573', scheduleData.length);
+        console.log('%c✓ Columns:', 'color: #2ed573', scheduleData[0]?.length || 0);
+        console.log('%c✓ Headers:', 'color: #2ed573', scheduleData[0]);
+        console.log('%c✓ Sample data:', 'color: #2ed573', scheduleData.slice(1, 3));
+        console.groupEnd();
+        
+        window.basketballData = csvToArray(basketballCsv);
+        console.group('%c🏀 Basketball Schedule', 'color: #4361ee');
+        console.log('%c✓ Rows:', 'color: #2ed573', window.basketballData.length);
+        console.log('%c✓ Columns:', 'color: #2ed573', window.basketballData[0]?.length || 0);
+        console.log('%c✓ Headers:', 'color: #2ed573', window.basketballData[0]);
+        console.log('%c✓ Sample data:', 'color: #2ed573', window.basketballData.slice(1, 3));
+        console.groupEnd();
+        
+        window.soccerData = csvToArray(soccerCsv);
+        console.group('%c⚽ Soccer Schedule', 'color: #4361ee');
+        console.log('%c✓ Rows:', 'color: #2ed573', window.soccerData.length);
+        console.log('%c✓ Columns:', 'color: #2ed573', window.soccerData[0]?.length || 0);
+        console.log('%c✓ Headers:', 'color: #2ed573', window.soccerData[0]);
+        console.log('%c✓ Sample data:', 'color: #2ed573', window.soccerData.slice(1, 3));
+        console.groupEnd();
+
         prepareTeams(teamsData);
         prepareDisciplines(discData, teamsData);
         populateDropdown();
         showCurrentClass();
+        
+        console.groupEnd();
+        console.log('%c✓ All data loaded and processed successfully!', 'color: #2ed573; font-weight: bold');
     })
     .catch(error => {
-        console.error('%c[Teams] Error:', 'color: #ff4757', error);
+        console.groupEnd();
+        console.group('%c❌ Error Details', 'color: #ff4757; font-weight: bold');
+        console.error('%c✕ Message:', 'color: #ff4757', error.message);
+        console.error('%c✕ Stack:', 'color: #ff4757', error.stack);
+        console.error('%c✕ Full error:', 'color: #ff4757', error);
+        console.groupEnd();
         document.getElementById('loading').style.display = 'none';
         document.getElementById('error').style.display = 'block';
         document.getElementById('error').textContent = 'Wystąpił błąd: ' + error.message;
@@ -214,9 +318,8 @@ function showCurrentClass() {
     teamsList.innerHTML = '';
     if (classOrder.length === 0) return;
     
-    // Declare matches here so it's available throughout the function
     let matches = [];
-
+    
     document.getElementById('class-select').value = currentClassIdx;
     const klasa = classOrder[currentClassIdx];
     const teams = classTeams[klasa];
@@ -247,6 +350,7 @@ function showCurrentClass() {
         dyscDiv.textContent = `Dyscypliny: ${dyscypliny}`;
         leftDiv.appendChild(dyscDiv);
 
+        // Grupy (bez zmian)
         if (disc.grupaBasket || disc.grupaVolley) {
             const grupyDiv = document.createElement('div');
             grupyDiv.style.marginBottom = '0.5em';
@@ -273,10 +377,12 @@ function showCurrentClass() {
                 volleyDiv.style.fontSize = '0.98em';
                 volleyDiv.textContent = `Siatkówka: ${disc.grupaVolley}`;
                 grupyDiv.appendChild(volleyDiv);
+                grupyDiv.appendChild(volleyDiv);
             }
             leftDiv.appendChild(grupyDiv);
         }
 
+        // Lista zawodników (bez zmian)
         const zawodnicyNaglowek = document.createElement('div');
         zawodnicyNaglowek.style.fontWeight = 'bold';
         zawodnicyNaglowek.style.marginBottom = '0.2em';
@@ -305,6 +411,109 @@ function showCurrentClass() {
             ul.appendChild(li);
         });
         leftDiv.appendChild(ul);
+
+        // Stats section moved after players list
+        const stats = calculateTeamStats(klasa, teamName);
+        const points = calculateTeamPoints(klasa, teamName);
+        
+        const statsContainer = document.createElement('div');
+        statsContainer.className = 'stats-container';
+        statsContainer.style.marginTop = '1.5rem';
+        statsContainer.style.marginBottom = '2rem';
+        statsContainer.style.padding = '1rem';
+        statsContainer.style.backgroundColor = '#f8f9fa';
+        statsContainer.style.borderRadius = '12px';
+        statsContainer.style.boxShadow = '0 2px 4px rgba(0,0,0,0.05)';
+        
+        const statsTitle = document.createElement('h3');
+        const position = getTeamPosition(klasa, teamName);
+        // Get total points from main ranking
+        const mainRankingData = window.mainTableData?.find(row => 
+            row.class === klasa && row.teamName === teamName
+        );
+        
+        statsTitle.innerHTML = `
+            <div style="margin-bottom: 0.5rem">📊 Statystyki drużyny</div>
+            ${position ? `
+                <div style="
+                    font-size: 0.95rem;
+                    color: ${position === 1 ? '#ffd700' : // złoto
+                           position === 2 ? '#C0C0C0' : // srebro
+                           position === 3 ? '#CD7F32' : // brąz
+                           'var(--primary)'};
+                    font-weight: ${position <= 3 ? '600' : '500'};
+                    padding: 4px 12px;
+                    background: ${position === 1 ? 'rgba(255,215,0,0.1)' : // złoto
+                                position === 2 ? 'rgba(192,192,192,0.1)' : // srebro
+                                position === 3 ? 'rgba(205,127,50,0.1)' : // brąz
+                                'rgba(67,97,238,0.1)'};
+                    border-radius: 6px;
+                    display: inline-block;
+                    margin-bottom: 0.5rem;
+                ">
+                    ${position}. miejsce w klasyfikacji generalnej
+                </div>
+                ${mainRankingData ? `
+                <div style="
+                    font-size: 0.9rem;
+                    padding: 4px 12px;
+                    background: rgba(67,97,238,0.05);
+                    border-radius: 6px;
+                    display: inline-block;
+                    margin-left: 8px;
+                ">
+                    🏆 Łączna liczba punktów: ${mainRankingData.totalPoints}
+                    (${[
+                        disc.basket ? `🏀 ${mainRankingData.basketballPoints}` : null,
+                        disc.volley ? `🏐 ${mainRankingData.volleyballPoints}` : null,
+                        disc.soccer ? `⚽ ${mainRankingData.footballPoints}` : null
+                    ].filter(Boolean).join(' + ')})
+                </div>` : ''}
+            ` : ''}
+        `;
+        statsTitle.style.marginBottom = '1rem';
+        statsTitle.style.color = 'var(--primary)';
+        statsTitle.style.fontSize = '1.1rem';
+        statsContainer.appendChild(statsTitle);
+        
+        const statsContent = document.createElement('div');
+        statsContent.style.display = 'flex';
+        statsContent.style.justifyContent = 'space-around';
+        statsContent.style.flexWrap = 'wrap';
+        statsContent.style.gap = '1.5rem';
+        
+        statsContent.innerHTML = `
+            ${(stats.volleyball.played || (disc.volley)) ? `
+                <div style="min-width: 200px; flex: 1;">
+                    <strong>🏐 Siatkówka:</strong>
+                    <div>🏃 Rozegrane: ${stats.volleyball.played}</div>
+                    <div>🥇 Wygrane: ${stats.volleyball.won}</div>
+                    <div>🥈 Przegrane: ${stats.volleyball.lost}</div>
+                    <div style="color: var(--primary);">🏆 Punkty: ${points.volleyball}</div>
+                </div>
+            ` : ''}
+            ${(stats.basketball.played || (disc.basket)) ? `
+                <div style="min-width: 200px; flex: 1;">
+                    <strong>🏀 Koszykówka:</strong>
+                    <div>🏃 Rozegrane: ${stats.basketball.played}</div>
+                    <div>🥇 Wygrane: ${stats.basketball.won}</div>
+                    <div>🥈 Przegrane: ${stats.basketball.lost}</div>
+                    <div style="color: var(--primary);">🏆 Punkty: ${points.basketball}</div>
+                </div>
+            ` : ''}
+            ${(stats.soccer.played || (disc.soccer)) ? `
+                <div style="min-width: 200px; flex: 1;">
+                    <strong>⚽ Piłka nożna:</strong>
+                    <div>🏃 Rozegrane: ${stats.soccer.played}</div>
+                    <div>🥇 Wygrane: ${stats.soccer.won}</div>
+                    <div>🥈 Przegrane: ${stats.soccer.lost}</div>
+                    <div style="color: var(--primary);">🏆 Punkty: ${points.soccer}</div>
+                </div>
+            ` : ''}
+        `;
+        
+        statsContainer.appendChild(statsContent);
+        leftDiv.appendChild(statsContainer);
     }
 
     // Dodaj logo po prawej stronie karty, większe
@@ -329,7 +538,6 @@ function showCurrentClass() {
 
     card.appendChild(leftDiv);
     card.appendChild(logoDiv);
-
     teamsList.appendChild(card);
 
     // --- MECZE DLA DANEJ KLASY ---
@@ -710,50 +918,44 @@ function showCurrentClass() {
             console.log(`%c[Teams] Rendering soccer matches for class: ${klasa}`, 'color: #4361ee');
             const teamsList = document.getElementById('teams-list');
             
-            fetch(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SOCCER_RANGE.split('!')[0]}&range=${SOCCER_RANGE.split('!')[1]}`)
-                .then(response => response.text())
-                .then(csv => {
-                    const soccerData = csvToArray(csv);
-                    console.log('%c[Teams] Soccer data fetched', 'color: #2ed573');
-                    
-                    const matches = [];
-                    for (let i = 1; i < soccerData.length; i++) {
-                        const row = soccerData[i];
-                        if (!row || row.length < 9) continue;
-                        
-                        // Map new structure:
-                        // ID, Data, Godzina, klasa team 1, Team 1, Wynik_team1, wynik_team2, Team 2, klasa team 2, Nagłówek
-                        const mappedRow = [
-                            row[1], // data
-                            row[2], // godzina
-                            row[3], // klasa1
-                            row[4], // team1
-                            row[5], // wynik1
-                            row[6], // wynik2
-                            '', // points (empty)
-                            row[7], // team2
-                            row[8], // klasa2
-                            '', // court (empty)
-                            row[9] || '' // nagłówek
-                        ];
+            // Use the already fetched soccer data from window.soccerData
+            const soccerData = window.soccerData || [];
+            const matches = [];
+            
+            for (let i = 1; i < soccerData.length; i++) {
+                const row = soccerData[i];
+                if (!row || row.length < 9) continue;
+                
+                const mappedRow = [
+                    row[1], // Data
+                    row[2], // Godzina
+                    row[3], // klasa team 1
+                    row[4], // Team 1
+                    row[5], // Wynik team 1
+                    row[6], // Wynik team 2
+                    '', // points (empty)
+                    row[7], // Team 2
+                    row[8], // klasa team 2
+                    '', // court (empty)
+                    row[9] || '' // Nagłówek
+                ];
 
-                        if (row[3] === klasa || row[8] === klasa) {
-                            matches.push(mappedRow);
-                        }
-                    }
+                if (row[3] === klasa || row[8] === klasa) {
+                    matches.push(mappedRow);
+                }
+            }
 
-                    if (matches.length > 0) {
-                        const soccerHeader = document.createElement('h2');
-                        soccerHeader.textContent = 'Mecze piłki nożnej';
-                        soccerHeader.style.marginTop = '2.5rem';
-                        soccerHeader.style.marginBottom = '0.5rem';
-                        soccerHeader.style.color = 'var(--primary)';
-                        soccerHeader.style.fontSize = '1.3rem';
-                        teamsList.appendChild(soccerHeader);
+            if (matches.length > 0) {
+                const soccerHeader = document.createElement('h2');
+                soccerHeader.textContent = 'Mecze piłki nożnej';
+                soccerHeader.style.marginTop = '2.5rem';
+                soccerHeader.style.marginBottom = '0.5rem';
+                soccerHeader.style.color = 'var(--primary)';
+                soccerHeader.style.fontSize = '1.3rem';
+                teamsList.appendChild(soccerHeader);
 
-                        displaySoccerMatches(matches, teamsList, klasa);
-                    }
-                });
+                displaySoccerMatches(matches, teamsList, klasa);
+            }
         }
 
         function displaySoccerMatches(matches, container, klasa) {
@@ -924,10 +1126,174 @@ document.addEventListener('DOMContentLoaded', () => {
             showCurrentClass();
         }
     });
+    
+    // Handle URL parameter for class selection
+    const urlParams = new URLSearchParams(window.location.search);
+    const classParam = urlParams.get('class');
+    
+    if (classParam) {
+        // Wait for teams to load
+        const checkInterval = setInterval(() => {
+            if (classOrder.length > 0) {
+                clearInterval(checkInterval);
+                // Find the index of the requested class
+                const classIndex = classOrder.findIndex(c => c === classParam);
+                if (classIndex !== -1) {
+                    currentClassIdx = classIndex;
+                    document.getElementById('class-select').value = classIndex;
+                    showCurrentClass();
+                }
+            }
+        }, 100);
+    }
 });
 
 // Add at the very beginning of the file, after the last <script> tag:
-console.log('%c[Teams] Script loaded', 'color: #4361ee; font-weight: bold;');
+console.log('%c[Teams] Script loaded', 'color: #4361ee; font-weight: bold');
+
+// Add these functions before showCurrentClass()
+
+function calculateTeamStats(klasa, teamName) {
+    const stats = {
+        volleyball: { played: 0, won: 0, lost: 0 },
+        basketball: { played: 0, won: 0, lost: 0 },
+        soccer: { played: 0, won: 0, lost: 0 },
+        total: { played: 0, won: 0, lost: 0 }
+    };
+
+    // Calculate volleyball stats
+    if (scheduleData && scheduleData.length > 0) {
+        for (let i = 1; i < scheduleData.length; i++) {
+            const match = scheduleData[i];
+            if (!match || match.length < 9) continue;
+            
+            const isTeam1 = match[2] === klasa && match[3] === teamName;
+            const isTeam2 = match[8] === klasa && match[7] === teamName;
+            
+            if (isTeam1 || isTeam2) {
+                if (match[4] && match[5] && match[4].trim() !== '' && match[5].trim() !== '') {
+                    stats.volleyball.played++;
+                    const score1 = parseInt(match[4]) || 0;
+                    const score2 = parseInt(match[5]) || 0;
+                    if (isTeam1) {
+                        if (score1 > score2) stats.volleyball.won++;
+                        else stats.volleyball.lost++;
+                    } else {
+                        if (score2 > score1) stats.volleyball.won++;
+                        else stats.volleyball.lost++;
+                    }
+                }
+            }
+        }
+    }
+
+    // Calculate basketball stats
+    if (window.basketballData && window.basketballData.length > 0) {
+        for (let i = 1; i < window.basketballData.length; i++) {
+            const match = window.basketballData[i];
+            if (!match || match.length < 6) continue;
+            
+            const [team1Class, team1Name] = (match[2] || '').split(' - ');
+            const [team2Class, team2Name] = (match[5] || '').split(' - ');
+            
+            const isTeam1 = team1Class === klasa && team1Name === teamName;
+            const isTeam2 = team2Class === klasa && team2Name === teamName;
+            
+            if (isTeam1 || isTeam2) {
+                if (match[3] && match[4] && match[3].trim() !== '' && match[4].trim() !== '') {
+                    stats.basketball.played++;
+                    const score1 = parseInt(match[3]) || 0;
+                    const score2 = parseInt(match[4]) || 0;
+                    if (isTeam1) {
+                        if (score1 > score2) stats.basketball.won++;
+                        else stats.basketball.lost++;
+                    } else {
+                        if (score2 > score1) stats.basketball.won++;
+                        else stats.basketball.lost++;
+                    }
+                }
+            }
+        }
+    }
+
+    // Calculate soccer stats
+    if (window.soccerData && window.soccerData.length > 0) {
+        for (let i = 1; i < window.soccerData.length; i++) {
+            const match = window.soccerData[i];
+            if (!match || match.length < 9) continue;
+            
+            const isTeam1 = match[3] === klasa && match[4] === teamName;
+            const isTeam2 = match[8] === klasa && match[7] === teamName;
+            
+            if (isTeam1 || isTeam2) {
+                if (match[5] && match[6] && match[5].trim() !== '' && match[6].trim() !== '') {
+                    stats.soccer.played++;
+                    const score1 = parseInt(match[5]) || 0;
+                    const score2 = parseInt(match[6]) || 0;
+                    if (isTeam1) {
+                        if (score1 > score2) stats.soccer.won++;
+                        else stats.soccer.lost++;
+                    } else {
+                        if (score2 > score1) stats.soccer.won++;
+                        else stats.soccer.lost++;
+                    }
+                }
+            }
+        }
+    }
+
+    // Calculate totals
+    stats.total.played = stats.volleyball.played + stats.basketball.played + stats.soccer.played;
+    stats.total.won = stats.volleyball.won + stats.basketball.won + stats.soccer.won;
+    stats.total.lost = stats.volleyball.lost + stats.basketball.lost + stats.soccer.lost;
+
+    return stats;
+}
+
+function calculateTeamPoints(klasa, teamName) {
+    const stats = calculateTeamStats(klasa, teamName);
+    return {
+        volleyball: stats.volleyball.won * 3,
+        basketball: stats.basketball.won * 3,
+        soccer: stats.soccer.won * 3,
+        total: (stats.volleyball.won + stats.basketball.won + stats.soccer.won) * 3
+    };
+}
+
+function getTeamPosition(klasa, teamName) {
+    if (!window.mainTableData) return null;
+    
+    // Sort mainTableData by totalPoints in descending order
+    const sortedData = [...window.mainTableData].sort((a, b) => {
+        // First sort by total points descending
+        if (b.totalPoints !== a.totalPoints) {
+            return b.totalPoints - a.totalPoints;
+        }
+        // If points are equal, return 0 to keep original order
+        return 0;
+    });
+
+    // Find position giving the same position for equal points
+    let position = 1;
+    let prevPoints = -1;
+
+    for (let i = 0; i < sortedData.length; i++) {
+        const team = sortedData[i];
+        
+        // If points are different from previous team, update position
+        if (team.totalPoints !== prevPoints) {
+            position = i + 1;
+        }
+        
+        if (team.class === klasa && team.teamName === teamName) {
+            return position;
+        }
+        
+        prevPoints = team.totalPoints;
+    }
+    
+    return null;
+}
 </script>
 </body>
 </html>

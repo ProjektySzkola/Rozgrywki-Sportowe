@@ -375,3 +375,66 @@ li { padding: 6px 0; border-bottom: 1px solid #eee; }
         max-width: 100px;
     }
 }
+
+@media (max-width: 768px) {
+    .team-card {
+        padding: 1rem;
+    }
+
+    .team-members {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 0.8rem;
+    }
+
+    .member-card {
+        padding: 0.8rem;
+    }
+
+    .member-name {
+        font-size: 0.9rem;
+    }
+
+    .member-number {
+        font-size: 0.8rem;
+    }
+
+    .team-stats {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .team-members {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 0.6rem;
+    }
+
+    .member-card {
+        padding: 0.6rem;
+    }
+
+    .member-name {
+        font-size: 0.85rem;
+    }
+
+    .member-number {
+        font-size: 0.75rem;
+    }
+
+    .team-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .team-members {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .member-card {
+        padding: 0.5rem;
+    }
+}

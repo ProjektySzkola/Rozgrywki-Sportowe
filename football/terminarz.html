@@ -145,6 +145,47 @@
             white-space: nowrap;
         }
 
+        .team.clickable {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            border: 2px solid transparent;
+        }
+
+        .team.clickable::before {
+            content: '👆 Kliknij';
+            position: absolute;
+            bottom: calc(100% + 5px);
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: rgba(67, 97, 238, 0.9);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            opacity: 0;
+            transition: all 0.2s ease-in-out;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .team.clickable:hover {
+            transform: translateY(-2px);
+            background: rgba(67, 97, 238, 0.15);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.1);
+            border-color: var(--primary);
+        }
+
+        .team.clickable:hover::before {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .team.clickable:active {
+            transform: translateY(0);
+            background: rgba(67, 97, 238, 0.25);
+        }
+
         .score {
             display: flex;
             justify-content: center;
@@ -661,8 +702,12 @@
                     }
                     
                     const team1Div = document.createElement('div');
-                    team1Div.className = 'team home';
+                    team1Div.className = 'team home clickable';
                     team1Div.textContent = team1Text;
+                    team1Div.title = 'Kliknij aby zobaczyć szczegóły drużyny';
+                    team1Div.onclick = () => {
+                        window.location.href = `../teams/teams.html?class=${encodeURIComponent(match[class1Index])}`;
+                    };
                     matchDiv.appendChild(team1Div);
                     
                     const scoreDiv = document.createElement('div');
@@ -698,8 +743,12 @@
                     }
                     
                     const team2Div = document.createElement('div');
-                    team2Div.className = 'team away';
+                    team2Div.className = 'team away clickable';
                     team2Div.textContent = team2Text;
+                    team2Div.title = 'Kliknij aby zobaczyć szczegóły drużyny';
+                    team2Div.onclick = () => {
+                        window.location.href = `../teams/teams.html?class=${encodeURIComponent(match[class2Index])}`;
+                    };
                     matchDiv.appendChild(team2Div);
                     
                     const infoDiv = document.createElement('div');

@@ -145,6 +145,138 @@
             white-space: nowrap;
         }
 
+        .team.clickable {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            border: 2px solid transparent;
+        }
+
+        .team.clickable::before {
+            content: '👆 Kliknij';
+            position: absolute;
+            bottom: calc(100% + 5px);
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: rgba(67, 97, 238, 0.9);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            opacity: 0;
+            transition: all 0.2s ease-in-out;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .team.clickable:hover {
+            transform: translateY(-2px);
+            background: rgba(67, 97, 238, 0.15);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.1);
+            border-color: var(--primary);
+        }
+
+        .team.clickable:hover::before {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .team.clickable:active {
+            transform: translateY(0);
+            background: rgba(67, 97, 238, 0.25);
+        }
+
+        @media (max-width: 768px) {
+            .team {
+                font-size: 0.8rem;
+                padding: 8px;
+                min-height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .match-container {
+                gap: 0.4rem;
+                padding: 12px 8px;
+            }
+
+            .match-info {
+                gap: 0.5rem;
+                font-size: 0.75rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .score {
+                min-width: 45px;
+                transform: scale(0.9);
+            }
+
+            .live-badge, .coming-up-badge {
+                font-size: 0.65rem;
+                padding: 2px 6px;
+            }
+
+            .match-header {
+                font-size: 0.85rem;
+                padding: 6px;
+            }
+
+            .filter-container {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-select {
+                font-size: 0.85rem;
+                padding: 8px 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0.8rem;
+            }
+
+            .team {
+                font-size: 0.75rem;
+                padding: 6px;
+            }
+
+            .score {
+                transform: scale(0.85);
+            }
+
+            .match-time, .match-location {
+                font-size: 0.7rem;
+            }
+
+            .date-header {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .match-container {
+                grid-template-columns: 1fr 40px 1fr;
+            }
+
+            .team {
+                font-size: 0.7rem;
+                padding: 4px;
+            }
+
+            .score {
+                transform: scale(0.8);
+                min-width: 40px;
+            }
+
+            .match-info {
+                font-size: 0.65rem;
+            }
+        }
+
         .score {
             display: flex;
             flex-direction: column;
@@ -825,10 +957,14 @@
             
             // Team 1
             const team1Div = document.createElement('div');
-            team1Div.className = 'team home';
+            team1Div.className = 'team home clickable';
             const team1Class = match[team1ClassIndex] || '';
             const team1Name = match[team1NameIndex] || '';
             team1Div.textContent = team1Class && team1Name ? `${team1Class} - ${team1Name}` : team1Name;
+            team1Div.title = 'Kliknij aby zobaczyć szczegóły drużyny';
+            team1Div.onclick = () => {
+                window.location.href = `../teams/teams.html?class=${encodeURIComponent(team1Class)}`;
+            };
             matchDiv.appendChild(team1Div);
             
             // Score container
@@ -867,10 +1003,14 @@
             
             // Team 2
             const team2Div = document.createElement('div');
-            team2Div.className = 'team away';
+            team2Div.className = 'team away clickable';
             const team2Class = match[team2ClassIndex] || '';
             const team2Name = match[team2NameIndex] || '';
             team2Div.textContent = team2Class && team2Name ? `${team2Class} - ${team2Name}` : team2Name;
+            team2Div.title = 'Kliknij aby zobaczyć szczegóły drużyny';
+            team2Div.onclick = () => {
+                window.location.href = `../teams/teams.html?class=${encodeURIComponent(team2Class)}`;
+            };
             matchDiv.appendChild(team2Div);
             
             // Match info
