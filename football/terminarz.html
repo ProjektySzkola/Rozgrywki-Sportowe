@@ -428,43 +428,33 @@
 
     <div class="container">
         <h1>Terminarz - Piłka Nożna</h1>
-        <div class="controls">
-            <div class="filter-container">
-                <select id="teamFilter" class="filter-select">
-                    <option value="">Wszystkie drużyny</option>
-                    <option value="3F - 3Freaks">3F - 3Freaks</option>
-                    <option value="1D - DREAM TEAM">1D - DREAM TEAM</option>
-                    <option value="2G - Fc Kryształ">2G - Fc Kryształ</option>
-                    <option value="3C - baby peas">3C - baby peas</option>
-                    <option value="2B - ZPW 2B">2B - ZPW 2B</option>
-                    <option value="3A - Gos Lejos">3A - Gos Lejos</option>
-                    <option value="2F - Sicarios">2F - Sicarios</option>
-                    <option value="2D - 2Dominate">2D - 2Dominate</option>
-                    <option value="3G - 3Geeked">3G - 3Geeked</option>
-                    <option value="3D - GEEK3D OUT">3D - GEEK3D OUT</option>
-                    <option value="2C - Wybrzeże Klatki Schodowej">2C - Wybrzeże Klatki Schodowej</option>
-                    <option value="1C - Chicago Balls">1C - Chicago Balls</option>
-                </select>
-                <select id="dateFilter" class="filter-select">
-                    <option value="all">Wszystkie daty</option>
-                    <option value="upcoming">Nadchodzące mecze</option>
-                    <option value="past">Zakończone mecze</option>
-                    <option value="today">Dzisiejsze mecze</option>
-                </select>
-            </div>
-            <div class="sort-container">
-                <select id="sortOrder" class="filter-select">
-                    <option value="newest">Od najnowszych</option>
-                    <option value="oldest">Od najstarszych</option>
-                </select>
-            </div>
-        </div>
         <button class="refresh-btn" onclick="loadData(true)">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
                 <path d="M21.5 2v6h-6M2.5 22v-6h6M21.5 22a10 10 0 0 0-10-10 10 10 0 0 0-1.74.16M2.5 2a10 10 0 0 0 10 10 10 10 0 0 0 1.74-.16"></path>
             </svg>
             Odśwież dane
         </button>
+        <div class="controls">
+            <div class="sort-container">
+                <select class="filter-select" id="sortOrder" onchange="handleSort(this.value)">
+                    <option value="newest">Od najnowszych</option>
+                    <option value="oldest">Od najstarszych</option>
+                </select>
+            </div>
+            <div class="sort-container">
+                <select class="filter-select" id="teamFilter" onchange="handleSort(document.getElementById('sortOrder').value)">
+                    <option value="all">Wszystkie drużyny</option>
+                </select>
+            </div>
+            <div class="sort-container">
+                <select class="filter-select" id="statusFilter" onchange="handleSort(document.getElementById('sortOrder').value)">
+                    <option value="all">Wszystkie mecze</option>
+                    <option value="upcoming">Nadchodzące</option>
+                    <option value="today">Dzisiejsze</option>
+                    <option value="finished">Zakończone</option>
+                </select>
+            </div>
+        </div>
         <div id="loading" class="loading">Ładowanie danych...</div>
         <div id="error" class="error" style="display: none;"></div>
         
@@ -481,40 +471,59 @@
 
         const SPREADSHEET_ID = '15q06r0qd-UE8Wna1tRJxlQ2biZz-PIPxNntGX4uQC0w';
         const SCHEDULE_RANGE = 'Dane_Strona_Noga!V:AE'; // Nowy zakres dla piłki nożnej
-        
+
+        // Define data indices
+        const dateIndex = 1;
+        const timeIndex = 2;
+        const class1Index = 3;
+        const team1Index = 4;
+        const score1Index = 5;
+        const score2Index = 6;
+        const team2Index = 7;
+        const class2Index = 8;
+        const matchHeaderIndex = 9;
+
         function loadData(forceFullUpdate = false) {
             document.getElementById('loading').style.display = 'block';
             document.getElementById('error').style.display = 'none';
             
-            // Jeśli to nie jest wymuszona aktualizacja i dane są świeże (mniej niż 5 minut), tylko zaktualizuj status LIVE
             if (!forceFullUpdate && lastUpdateTime && (Date.now() - lastUpdateTime) < FULL_UPDATE_INTERVAL) {
-                document.getElementId('loading').style.display = 'none';
+                document.getElementById('loading').style.display = 'none';
                 updateLiveMatches();
                 return;
             }
 
             const scheduleUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SCHEDULE_RANGE.split('!')[0]}&range=${SCHEDULE_RANGE.split('!')[1]}`;
             
-            fetch(scheduleUrl)
-                .then(response => response.text())
-                .then(data => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', scheduleUrl, true);
+            
+            xhr.onload = function() {
+                if (xhr.status === 200) {
                     document.getElementById('loading').style.display = 'none';
-                    const scheduleArray = csvToArray(data);
+                    const scheduleArray = csvToArray(xhr.responseText);
+                    window.lastScheduleData = scheduleArray;
                     displaySchedule(scheduleArray);
                     lastUpdateTime = Date.now();
-                    
-                    // Uruchom automatyczną aktualizację
                     setupLiveUpdates();
-                })
-                .catch(error => {
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('error').style.display = 'block';
-                    document.getElementById('error').textContent = 'Wystąpił błąd: ' + error.message;
-                    console.error('Error:', error);
-                    
-                    // Spróbuj ponownie za 30 sekund
-                    setTimeout(() => loadData(), 30000);
-                });
+                } else {
+                    handleError('Error fetching data: ' + xhr.statusText);
+                }
+            };
+            
+            xhr.onerror = function() {
+                handleError('Network error occurred');
+            };
+            
+            xhr.send();
+        }
+
+        function handleError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('error').textContent = 'Wystąpił błąd: ' + message;
+            console.error('Error:', message);
+            setTimeout(() => loadData(), 30000);
         }
 
         function setupLiveUpdates() {
@@ -614,6 +623,101 @@
             return now.getHours() * 60 + now.getMinutes();
         }
 
+        function updateLiveStatus(matchElement) {
+            const currentTimeInMinutes = getCurrentTimeInMinutes();
+            const today = new Date();
+            const todayString = `${today.getDate().toString().padStart(2, '0')}.${(today.getMonth()+1).toString().padStart(2, '0')}.${today.getFullYear()}`;
+            
+            const matchDate = matchElement.getAttribute('data-date');
+            const matchTime = matchElement.getAttribute('data-time');
+            
+            if (matchDate === todayString && matchTime) {
+                const [startTime, endTime] = matchTime.split(' - ');
+                if (!startTime || !endTime) return;
+                
+                const [startHours, startMinutes] = startTime.split(':').map(Number);
+                const [endHours, endMinutes] = endTime.split(':').map(Number);
+                
+                if (!startHours || !startMinutes || !endHours || !endMinutes) return;
+                
+                const startTimeInMinutes = startHours * 60 + startMinutes;
+                const endTimeInMinutes = endHours * 60 + endMinutes;
+                
+                if (currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes <= endTimeInMinutes) {
+                    // Remove existing LIVE badge if any
+                    const existingBadge = matchElement.querySelector('.live-badge');
+                    if (existingBadge) existingBadge.remove();
+                    
+                    const badge = document.createElement('div');
+                    badge.className = 'live-badge';
+                    badge.textContent = 'LIVE';
+                    matchElement.appendChild(badge);
+                    matchElement.classList.add('live-match');
+                }
+            }
+        }
+
+        function updateTeamFilterOptions(data) {
+            const teamFilter = document.getElementById('teamFilter');
+            const currentValue = teamFilter.value;
+            const teams = new Set();
+
+            // Extract unique team names
+            for (let i = 1; i < data.length; i++) {
+                const row = data[i];
+                if (row[class1Index] && row[team1Index]) {
+                    teams.add(`${row[class1Index]} - ${row[team1Index]}`);
+                }
+                if (row[class2Index] && row[team2Index]) {
+                    teams.add(`${row[class2Index]} - ${row[team2Index]}`);
+                }
+            }
+
+            // Update dropdown options only if they changed
+            const sortedTeams = Array.from(teams).sort();
+            if (teamFilter.options.length !== sortedTeams.length + 1) {
+                teamFilter.innerHTML = '<option value="all">Wszystkie drużyny</option>';
+                sortedTeams.forEach(team => {
+                    const option = document.createElement('option');
+                    option.value = team;
+                    option.textContent = team;
+                    teamFilter.appendChild(option);
+                });
+                teamFilter.value = currentValue;
+            }
+        }
+
+        function getMatchStatus(match) {
+            const today = new Date();
+            const todayString = `${today.getDate().toString().padStart(2, '0')}.${(today.getMonth()+1).toString().padStart(2, '0')}.${today.getFullYear()}`;
+
+            const matchDate = match[dateIndex];
+            const hasScores = match[score1Index]?.trim().length > 0 || match[score2Index]?.trim().length > 0;
+
+            // Sprawdź wyniki i datę
+            if (hasScores) {
+                // Jeśli ma wyniki, zaznacz jako zakończony
+                return 'finished';
+            }
+
+            // Sprawdź czy mecz jest dzisiaj
+            if (matchDate === todayString) {
+                return 'today';
+            }
+
+            // Sprawdź czy mecz jest z przeszłości
+            const [day, month, year] = matchDate.split('.').map(Number);
+            const matchDateObj = new Date(year, month - 1, day);
+            matchDateObj.setHours(23, 59, 59);
+
+            if (matchDateObj < today) {
+                return 'finished';
+            }
+
+            // Pozostałe to nadchodzące
+            return 'upcoming';
+        }
+
         function displaySchedule(data) {
             if (!data || data.length === 0) {
                 document.getElementById('error').style.display = 'block';
@@ -621,20 +725,17 @@
                 return;
             }
 
+            // Update team filter options if needed
+            updateTeamFilterOptions(data);
+
             const container = document.getElementById('schedule-container');
             container.innerHTML = '';
 
-            const headers = data[0];
-            const dateIndex = 1; // Kolumna B (Data)
-            const timeIndex = 2; // Kolumna C (Godzina)
-            const class1Index = 3; // Kolumna D (klasa team 1)
-            const team1Index = 4; // Kolumna E (Team 1)
-            const score1Index = 5; // Kolumna F (Wynik - lewa część)
-            const score2Index = 6; // Kolumna G (Wynik - prawa część)
-            const team2Index = 7; // Kolumna H (Team 2)
-            const class2Index = 8; // Kolumna I (klasa team 2)
-            const matchHeaderIndex = 9; // Kolumna J (Nagłówek)
-
+            // Get current sort order and team filter
+            const sortOrder = document.getElementById('sortOrder').value;
+            const selectedTeam = document.getElementById('teamFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
             const matchesByDate = {};
             for (let i = 1; i < data.length; i++) {
                 const row = data[i];
@@ -642,6 +743,18 @@
                 
                 const date = row[dateIndex].trim();
                 if (!date) continue;
+
+                // Apply filters
+                if (selectedTeam !== 'all') {
+                    const team1 = `${row[class1Index]} - ${row[team1Index]}`;
+                    const team2 = `${row[class2Index]} - ${row[team2Index]}`;
+                    if (team1 !== selectedTeam && team2 !== selectedTeam) continue;
+                }
+
+                if (statusFilter !== 'all') {
+                    const matchStatus = getMatchStatus(row);
+                    if (matchStatus !== statusFilter) continue;
+                }
                 
                 if (!matchesByDate[date]) {
                     matchesByDate[date] = [];
@@ -649,13 +762,9 @@
                 matchesByDate[date].push(row);
             }
 
-            const sortedDates = Object.keys(matchesByDate).sort((a, b) => {
-                const [dayA, monthA, yearA] = a.split('.').map(Number);
-                const [dayB, monthB, yearB] = b.split('.').map(Number);
-                const dateA = new Date(yearA, monthA - 1, dayA);
-                const dateB = new Date(yearB, monthB - 1, dayB);
-                return dateB - dateA;
-            });
+            // Sort dates based on selected order
+            let sortedDates = Object.keys(matchesByDate);
+            sortedDates = sortMatches(sortedDates, sortOrder);
 
             sortedDates.forEach(date => {
                 const [day, month, year] = date.split('.').map(Number);
@@ -666,17 +775,6 @@
                 dateHeader.className = 'date-header';
                 dateHeader.textContent = `${dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)}, ${date}`;
                 container.appendChild(dateHeader);
-                
-                matchesByDate[date].sort((a, b) => {
-                    const timeA = a[timeIndex].split(' - ')[0];
-                    const timeB = b[timeIndex].split(' - ')[0];
-                    
-                    const [hoursA, minutesA] = timeA.split(':').map(Number);
-                    const [hoursB, minutesB] = timeB.split(':').map(Number);
-                    
-                    if (hoursA !== hoursB) return hoursA - hoursB;
-                    return minutesA - minutesB;
-                });
                 
                 matchesByDate[date].forEach(match => {
                     const matchDiv = document.createElement('div');
@@ -771,36 +869,33 @@
             });
         }
 
-        function updateLiveStatus(matchElement) {
-            const currentTimeInMinutes = getCurrentTimeInMinutes();
-            const today = new Date();
-            const todayString = `${today.getDate().toString().padStart(2, '0')}.${(today.getMonth()+1).toString().padStart(2, '0')}.${today.getFullYear()}`;
-            
-            const matchDate = matchElement.getAttribute('data-date');
-            const matchTime = matchElement.getAttribute('data-time');
-            
-            if (matchDate === todayString && matchTime) {
-                const [startTime, endTime] = matchTime.split(' - ');
-                const [startHours, startMinutes] = startTime.split(':').map(Number);
-                const [endHours, endMinutes] = endTime.split(':').map(Number);
+        function sortMatches(dates, sortOrder) {
+            return dates.sort((a, b) => {
+                const [dayA, monthA, yearA] = a.split('.').map(Number);
+                const [dayB, monthB, yearB] = b.split('.').map(Number);
+                const dateA = new Date(yearA, monthA - 1, dayA);
+                const dateB = new Date(yearB, monthB - 1, dayB);
                 
-                const startTimeInMinutes = startHours * 60 + startMinutes;
-                const endTimeInMinutes = endHours * 60 + endMinutes;
-                
-                if (currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes <= endTimeInMinutes) {
-                    // If match is live, remove Coming Up badge if it exists
-                    const comingUpBadge = matchElement.querySelector('.coming-up-badge');
-                    if (comingUpBadge) {
-                        comingUpBadge.remove();
-                    }
-                    
-                    const liveBadge = document.createElement('div');
-                    liveBadge.className = 'live-badge';
-                    liveBadge.textContent = 'LIVE';
-                    matchElement.appendChild(liveBadge);
-                    matchElement.classList.add('live-match');
-                }
+                return sortOrder === 'oldest' ? dateA - dateB : dateB - dateA;
+            });
+        }
+
+        function handleSort(value) {
+            // Reload schedule with new sort order
+            if (lastUpdateTime) {
+                displaySchedule(window.lastScheduleData);
             }
+        }
+
+        // Modify loadData() to store the schedule data
+        const _originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            return _originalFetch.apply(this, args)
+                .then(response => response.text())
+                .then(data => {
+                    window.lastScheduleData = csvToArray(data);
+                    return data;
+                });
         }
 
         // Automatyczne ładowanie danych po załadowaniu strony

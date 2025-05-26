@@ -718,57 +718,43 @@ function showCurrentClass() {
             console.log(`%c[Teams] Rendering basketball matches for class: ${klasa}`, 'color: #4361ee');
             const teamsList = document.getElementById('teams-list');
             
-            fetch(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${BASKETBALL_RANGE.split('!')[0]}&range=${BASKETBALL_RANGE.split('!')[1]}`)
-                .then(response => response.text())
-                .then(csv => {
-                    const basketballData = csvToArray(csv);
-                    console.log('%c[Teams] Basketball data fetched', 'color: #2ed573');
-                    
-                    const matches = [];
-                    for (let i = 1; i < basketballData.length; i++) {
-                        const row = basketballData[i];
-                        if (!row || row.length < 6) continue; // Changed from 7 to 6 for new structure
-                        
-                        // Map new structure:
-                        // 0: Data, 1: Godzina, 2: Team 1, 3: wynik_team1, 4: wynik_team2, 5: Team 2, 6: Nagłówek
-                        const mappedRow = [
-                            row[0], // data
-                            row[1], // godzina
-                            row[2].split(' - ')[0] || '', // klasa1 (extracted from Team 1)
-                            row[2].split(' - ')[1] || '', // drużyna1 (extracted from Team 1)
-                            row[3], // wynik1
-                            row[4], // wynik2
-                            '', // points (empty as not provided)
-                            row[5].split(' - ')[1] || '', // drużyna2 (extracted from Team 2)
-                            row[5].split(' - ')[0] || '', // klasa2 (extracted from Team 2)
-                            '', // court (empty as not provided)
-                            row[6] || '' // nagłówek
-                        ];
+            const basketballData = window.basketballData || [];
+            const matches = [];
+            
+            for (let i = 1; i < basketballData.length; i++) {
+                const row = basketballData[i];
+                if (!row || row.length < 6) continue;
+                
+                const mappedRow = [
+                    row[0],  // Data
+                    row[1],  // Godzina
+                    (row[2] || '').split(' - ')[0],  // Klasa team 1
+                    (row[2] || '').split(' - ')[1],  // Nazwa team 1
+                    row[3],  // Wynik team 1
+                    row[4],  // Wynik team 2
+                    '',     // points (empty)
+                    (row[5] || '').split(' - ')[1],  // Nazwa team 2
+                    (row[5] || '').split(' - ')[0],  // Klasa team 2
+                    '',     // court (empty)
+                    row[6] || '' // Nagłówek
+                ];
+                
+                if (mappedRow[2] === klasa || mappedRow[8] === klasa) {
+                    matches.push(mappedRow);
+                }
+            }
 
-                        // Check if this match belongs to current class
-                        const classTeams = Object.keys(teams || {});
-                        const isTeam1Match = classTeams.some(teamName => 
-                            `${klasa} - ${teamName}` === row[2]);
-                        const isTeam2Match = classTeams.some(teamName => 
-                            `${klasa} - ${teamName}` === row[5]);
-                        
-                        if (isTeam1Match || isTeam2Match) {
-                            matches.push(mappedRow);
-                        }
-                    }
+            if (matches.length > 0) {
+                const basketballHeader = document.createElement('h2');
+                basketballHeader.textContent = 'Mecze koszykówki';
+                basketballHeader.style.marginTop = '2.5rem';
+                basketballHeader.style.marginBottom = '0.5rem';
+                basketballHeader.style.color = 'var(--primary)';
+                basketballHeader.style.fontSize = '1.3rem';
+                teamsList.appendChild(basketballHeader);
 
-                    if (matches.length > 0) {
-                        const basketballHeader = document.createElement('h2');
-                        basketballHeader.textContent = 'Mecze koszykówki';
-                        basketballHeader.style.marginTop = '2.5rem';
-                        basketballHeader.style.marginBottom = '0.5rem';
-                        basketballHeader.style.color = 'var(--primary)';
-                        basketballHeader.style.fontSize = '1.3rem';
-                        teamsList.appendChild(basketballHeader);
-
-                        displayBasketballMatches(matches, teamsList, klasa);
-                    }
-                });
+                displayBasketballMatches(matches, teamsList, klasa);
+            }
         }
 
         function displayBasketballMatches(matches, container, klasa) {
