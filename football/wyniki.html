@@ -161,24 +161,33 @@
             border-left: 2px solid var(--primary);
         }
     
-        .final .match-cell {
+        .final .match-cell, .third-place .match-cell {
             background-color: rgba(67, 97, 238, 0.08);
             border: 1px solid var(--primary-light);
             border-radius: 8px;
         }
     
-        .final .team {
+        .final .team, .third-place .team {
             padding: 8px 10px;
         }
     
-        .final .team-name {
+        .final .team-name, .third-place .team-name {
             font-weight: 600;
             font-size: 0.9em;
         }
     
-        .final .team-points {
+        .final .team-points, .third-place .team-points {
             font-size: 0.85em;
             padding: 2px 6px;
+        }
+
+        .final-place-header {
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 1rem;
+            margin-bottom: 5px;
+            padding: 2px 0;
         }
     
         .refresh-btn {
@@ -335,7 +344,7 @@
                             <th class="round-header">1/6 finału</th>
                             <th class="round-header">Ćwierćfinał</th>
                             <th class="round-header">Półfinał</th>
-                            <th class="round-header">Finał</th>
+                            <!-- <th class="round-header">Finał</th> -->
                         </tr>
                     </thead>
                     <tbody id="bracket-body">
@@ -357,6 +366,7 @@
         const LEVEL2_RANGE = 'Dane_Strona_Noga!G2:I44';
         const LEVEL3_RANGE = 'Dane_Strona_Noga!L2:N44';
         const FINAL_RANGE = 'Dane_Strona_Noga!Q2:S44';
+        const THIRD_PLACE_RANGE = 'Dane_Strona_Noga!Q47:S51';
         
         // Funkcja do ładowania danych
         function loadData(forceFullUpdate = false) {
@@ -409,20 +419,22 @@
                 fetchData(LEVEL1_RANGE),
                 fetchData(LEVEL2_RANGE),
                 fetchData(LEVEL3_RANGE),
-                fetchData(FINAL_RANGE)
+                fetchData(FINAL_RANGE),
+                fetchData(THIRD_PLACE_RANGE)
             ])
-            .then(([level1Data, level2Data, level3Data, finalData]) => {
+            .then(([level1Data, level2Data, level3Data, finalData, thirdPlaceData]) => {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('bracket-loading').style.display = 'none';
                 
-                // Logowanie pobranych danych do konsoli
+                                                // Logowanie pobranych danych do konsoli
                 console.log('1/6 finału:', level1Data);
                 console.log('Ćwierćfinał:', level2Data);
                 console.log('Półfinał:', level3Data);
                 console.log('Finał:', finalData);
+                console.log('Mecz o 3 miejsce:', thirdPlaceData);
                 
                 // Wyświetlanie drabinki z pobranymi danymi
-                displayBracket(level1Data, level2Data, level3Data, finalData);
+                displayBracket(level1Data, level2Data, level3Data, finalData, thirdPlaceData);
                 document.getElementById('bracket-container').style.display = 'block';
             })
             .catch(error => {
@@ -453,7 +465,7 @@
         }
 
         // Funkcja do wyświetlania drabinki
-        function displayBracket(level1Data, level2Data, level3Data, finalData) {
+        function displayBracket(level1Data, level2Data, level3Data, finalData, thirdPlaceData) {
             const bracketBody = document.getElementById('bracket-body');
             bracketBody.innerHTML = '';
 
@@ -529,11 +541,16 @@
                 team2: { name: level3Data[7]?.[0] || '...', points: level3Data[7]?.[1] || '', winner: level3Data[7]?.[2] === 'TRUE' }
             });
 
-
             // Pobieranie danych finału (1 mecz)
             const finalTeams = {
                 team1: { name: finalData[1]?.[0] || '...', points: finalData[1]?.[1] || '', winner: finalData[1]?.[2] === 'TRUE' },
                 team2: { name: finalData[3]?.[0] || '...', points: finalData[3]?.[1] || '', winner: finalData[3]?.[2] === 'TRUE' }
+            };
+
+            // Pobieranie danych meczu o 3 miejsce
+            const thirdPlaceTeams = {
+                team1: { name: thirdPlaceData[1]?.[0] || '...', points: thirdPlaceData[1]?.[1] || '', winner: thirdPlaceData[1]?.[2] === 'TRUE' },
+                team2: { name: thirdPlaceData[3]?.[0] || '...', points: thirdPlaceData[3]?.[1] || '', winner: thirdPlaceData[3]?.[2] === 'TRUE' }
             };
 
             // Budowanie HTML drabinki
@@ -577,7 +594,8 @@
                     </td>
                     
                     <!-- Finał -->
-                    <td rowspan="8" class="match-cell final">
+                    <td rowspan="4" class="match-cell final">
+                        <div class="final-place-header">Finał</div>
                         <div class="team ${finalTeams.team1.winner ? 'winner' : ''}">
                             <span class="team-name">${finalTeams.team1.name}</span>
                             <span class="team-points">${finalTeams.team1.points}</span>
@@ -604,7 +622,7 @@
                     </td>
                 </tr>
                 
-                <!-- Rząd 3 -->
+                                <!-- Rząd 3 -->
                 <tr>
                     <!-- 1/6 finału - Mecz 3 -->
                     <td class="match-cell">
@@ -630,6 +648,7 @@
                         </div>
                     </td>
                 </tr>
+
                 
                 <!-- Rząd 4 -->
                 <tr>
@@ -673,7 +692,7 @@
                     </td>
                     
                     <!-- Półfinał - Mecz 2 -->
-                    <td rowspan="4" class="match-cell">
+                    <td rowspan="2" class="match-cell">
                         <div class="team ${level3Teams[1].team1.winner ? 'winner' : ''}">
                             <span class="team-name">${level3Teams[1].team1.name}</span>
                             <span class="team-points">${level3Teams[1].team1.points}</span>
@@ -681,6 +700,19 @@
                         <div class="team ${level3Teams[1].team2.winner ? 'winner' : ''}">
                             <span class="team-name">${level3Teams[1].team2.name}</span>
                             <span class="team-points">${level3Teams[1].team2.points}</span>
+                        </div>
+                    </td>
+                    
+                    <!-- Mecz o 3 miejsce -->
+                    <td rowspan="2" class="match-cell third-place">
+                        <div class="final-place-header">Mecz o 3 miejsce</div>
+                        <div class="team ${thirdPlaceTeams.team1.winner ? 'winner' : ''}">
+                            <span class="team-name">${thirdPlaceTeams.team1.name}</span>
+                            <span class="team-points">${thirdPlaceTeams.team1.points}</span>
+                        </div>
+                        <div class="team ${thirdPlaceTeams.team2.winner ? 'winner' : ''}">
+                            <span class="team-name">${thirdPlaceTeams.team2.name}</span>
+                            <span class="team-points">${thirdPlaceTeams.team2.points}</span>
                         </div>
                     </td>
                 </tr>
@@ -750,3 +782,5 @@
     </script>
 </body>
 </html>
+
+
