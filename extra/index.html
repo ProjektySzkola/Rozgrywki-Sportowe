@@ -299,7 +299,29 @@
             opacity: 0.9;
         }
 
+        .date-indicator {
+            font-size: 0.8rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-weight: bold;
+            margin-left: 0.5rem;
+        }
 
+        .date-indicator.today {
+            background: var(--warning);
+            color: white;
+        }
+
+        .date-indicator.tomorrow {
+            background: var(--success);
+            color: white;
+        }
+
+        .score-badge {
+            background: var(--success);
+            font-size: 0.9rem;
+            min-width: 80px;
+        }
 
         /* Blokada zawijania tekstu */
         .ranking-table td:last-child {
@@ -468,6 +490,16 @@
             font-style: italic;
         }
 
+        .slide-dot.final-match {
+            background: #FFD700;
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+        }
+
+        .slide-dot.third-place-match {
+            background: #CD7F32;
+            box-shadow: 0 2px 8px rgba(205, 127, 50, 0.4);
+        }
+
         /* Style dla sekcji surowych danych */
         .raw-data-section {
             margin: 2rem 0;
@@ -573,6 +605,102 @@
                 width: 32px;
                 height: 32px;
             }
+        }
+
+        /* Style dla specjalnych meczy finałowych - delikatniejsze kolory */
+        .match-slide.final-match {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 193, 7, 0.1));
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.1);
+        }
+
+        .match-slide.third-place-match {
+            background: linear-gradient(135deg, rgba(205, 127, 50, 0.15), rgba(210, 105, 30, 0.1));
+            border: 1px solid rgba(205, 127, 50, 0.3);
+            box-shadow: 0 4px 15px rgba(205, 127, 50, 0.1);
+        }
+
+        .match-slide.final-match .match-header {
+            color: #B8860B;
+            font-weight: bold;
+        }
+
+        .match-slide.third-place-match .match-header {
+            color: #8B4513;
+            font-weight: bold;
+        }
+
+        .match-slide.final-match .match-subtitle {
+            color: #DAA520;
+            font-weight: 600;
+        }
+
+        .match-slide.third-place-match .match-subtitle {
+            color: #A0522D;
+            font-weight: 600;
+        }
+
+        .match-slide.final-match .vs-badge {
+            background: rgba(255, 215, 0, 0.2);
+            color: #B8860B;
+            font-weight: bold;
+            border: 1px solid rgba(255, 215, 0, 0.4);
+        }
+
+        .match-slide.third-place-match .vs-badge {
+            background: rgba(205, 127, 50, 0.2);
+            color: #8B4513;
+            font-weight: bold;
+            border: 1px solid rgba(205, 127, 50, 0.4);
+        }
+
+        /* Delikatne animacje */
+        .match-slide.final-match {
+            animation: finalGlowSubtle 4s ease-in-out infinite alternate;
+        }
+
+        .match-slide.third-place-match {
+            animation: bronzeGlowSubtle 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes finalGlowSubtle {
+            from {
+                box-shadow: 0 4px 15px rgba(255, 215, 0, 0.1);
+            }
+            to {
+                box-shadow: 0 6px 20px rgba(255, 215, 0, 0.15);
+            }
+        }
+
+        @keyframes bronzeGlowSubtle {
+            from {
+                box-shadow: 0 4px 15px rgba(205, 127, 50, 0.1);
+            }
+            to {
+                box-shadow: 0 6px 20px rgba(205, 127, 50, 0.15);
+            }
+        }
+
+        /* Specjalne ikony dla finałowych meczy */
+        .final-match .match-header::before {
+            content: "🏆 ";
+            font-size: 1.1em;
+        }
+
+        .third-place-match .match-header::before {
+            content: "🥉 ";
+            font-size: 1.1em;
+        }
+
+        /* Delikatne style dla kropek nawigacyjnych */
+        .slide-dot.final-match {
+            background: rgba(255, 215, 0, 0.6);
+            box-shadow: 0 2px 6px rgba(255, 215, 0, 0.2);
+        }
+
+        .slide-dot.third-place-match {
+            background: rgba(205, 127, 50, 0.6);
+            box-shadow: 0 2px 6px rgba(205, 127, 50, 0.2);
         }
     </style>
 </head>
@@ -907,20 +1035,36 @@
         // Funkcja ładująca nadchodzące mecze
         async function loadUpcomingMatches() {
             try {
+                console.log('Loading upcoming matches...');
+                
                 const [basketball, volleyball, football] = await Promise.all([
                     fetchMatchData('basketball'),
                     fetchMatchData('volleyball'),
                     fetchMatchData('football')
                 ]);
 
+                console.log('Basketball data:', basketball);
+                console.log('Volleyball data:', volleyball);
+                console.log('Football data:', football);
+
+                const basketballMatches = processBasketballMatches(basketball);
+                const volleyballMatches = processVolleyballMatches(volleyball);
+                const footballMatches = processFootballMatches(football);
+
+                console.log('Processed basketball matches:', basketballMatches);
+                console.log('Processed volleyball matches:', volleyballMatches);
+                console.log('Processed football matches:', footballMatches);
+
                 const allMatches = [
-                    ...processBasketballMatches(basketball),
-                    ...processVolleyballMatches(volleyball),
-                    ...processFootballMatches(football)
+                    ...basketballMatches,
+                    ...volleyballMatches,
+                    ...footballMatches
                 ];
 
+                console.log('All matches combined:', allMatches);
                 displayUpcomingMatches(allMatches);
             } catch (error) {
+                console.error('Error loading matches:', error);
                 document.getElementById('matches-loading').style.display = 'none';
                 document.getElementById('matches-error').style.display = 'block';
                 document.getElementById('matches-error').textContent = 'Błąd podczas ładowania meczy: ' + error.message;
@@ -936,15 +1080,26 @@
         }
 
         function processBasketballMatches(data) {
-            return data.slice(1).map(row => ({
-                sport: 'Koszykówka',
-                date: row[0],
-                time: row[1],
-                team1: { class: row[2], name: row[3] },
-                team2: { class: '', name: row[6] },
-                location: '',
-                header: row[7]
-            }));
+            return data.slice(1)
+                .filter(row => row[0] && row[0].trim() !== '') // Filter out empty rows
+                .map(row => ({
+                    sport: 'Koszykówka',
+                    date: row[0] || '',           // Data
+                    time: row[1] || '',           // Godzina
+                    team1: { 
+                        class: '', 
+                        name: row[2] || ''        // Team 1
+                    },
+                    team2: { 
+                        class: '', 
+                        name: row[5] || ''        // Team 2 (kolumna 6)
+                    },
+                    score1: row[3] || '',         // wynik team 1
+                    score2: row[4] || '',         // wynik team 2
+                    location: '',
+                    header: row[6] || ''          // Nagłówek
+                }))
+                .filter(match => match.date && match.team1.name && match.team2.name); // Only include complete matches
         }
 
         function processVolleyballMatches(data) {
@@ -976,22 +1131,20 @@
             const navContainer = document.getElementById('slideshow-nav');
             document.getElementById('matches-loading').style.display = 'none';
 
-            // Get today and next week
+            // Get today's date
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            const nextWeek = new Date(today);
-            nextWeek.setDate(today.getDate() + 7);
 
-            // Update heading with date range
+            // Update heading to reflect all upcoming matches
             const dateRangeHeading = document.querySelector('.upcoming-matches').previousElementSibling;
-            dateRangeHeading.textContent = `Mecze w przyszłym tygodniu`;
+            dateRangeHeading.textContent = `Nadchodzące mecze`;
 
             const futureMatches = matches
                 .filter(match => {
                     if (!match.date) return false;
                     const [day, month, year] = match.date.split('.').map(Number);
                     const matchDate = new Date(year, month - 1, day);
-                    return matchDate >= today && matchDate <= nextWeek;
+                    return matchDate >= today; // Show all matches from today onwards
                 })
                 .sort((a, b) => {
                     const [dayA, monthA, yearA] = a.date.split('.').map(Number);
@@ -1010,7 +1163,7 @@
                 });
 
             if (futureMatches.length === 0) {
-                container.innerHTML = '<div class="no-matches">Brak meczy w najbliższym tygodniu</div>';
+                container.innerHTML = '<div class="no-matches">Brak nadchodzących meczy</div>';
                 navContainer.innerHTML = '';
                 // Hide see more button when no matches
                 document.querySelector('.see-more-container').style.display = 'none';
@@ -1027,7 +1180,19 @@
 
             futureMatches.forEach((match, index) => {
                 const slide = document.createElement('div');
-                slide.className = `match-slide ${index === 0 ? 'active' : ''}`;
+                
+                // Determine special match types based on header - more precise matching
+                let specialClass = '';
+                if (match.header) {
+                    const headerLower = match.header.toLowerCase().trim();
+                    if (headerLower === 'finał') {
+                        specialClass = 'final-match';
+                    } else if (headerLower === 'mecz o 3 miejsce') {
+                        specialClass = 'third-place-match';
+                    }
+                }
+                
+                slide.className = `match-slide ${index === 0 ? 'active' : ''} ${specialClass}`;
 
                 const matchDate = new Date(match.date.split('.').reverse().join('-'));
                 const dateString = matchDate.toLocaleDateString('pl-PL', {
@@ -1037,15 +1202,32 @@
                     day: 'numeric'
                 });
 
+                // Check if match has results (for basketball)
+                const hasResults = match.score1 && match.score2 && match.score1.trim() !== '' && match.score2.trim() !== '';
+                const scoreDisplay = hasResults ? `${match.score1} : ${match.score2}` : 'VS';
+
+                // Add date indicator for better navigation
+                const isToday = matchDate.toDateString() === today.toDateString();
+                const tomorrow = new Date(today);
+                tomorrow.setDate(today.getDate() + 1);
+                const isTomorrow = matchDate.toDateString() === tomorrow.toDateString();
+                
+                let dateIndicator = '';
+                if (isToday) {
+                    dateIndicator = '<span class="date-indicator today">DZIŚ</span>';
+                } else if (isTomorrow) {
+                    dateIndicator = '<span class="date-indicator tomorrow">JUTRO</span>';
+                }
+
                 slide.innerHTML = `
-                    <div class="match-header">${match.sport}</div>
+                    <div class="match-header">${match.sport} ${dateIndicator}</div>
                     ${match.header ? `<div class="match-subtitle">${match.header}</div>` : ''}
                     <div class="match-info">
                         <div class="team-info">
                             <div class="team-name">${match.team1.name}</div>
                             ${match.team1.class ? `<div class="team-class">${match.team1.class}</div>` : ''}
                         </div>
-                        <div class="vs-badge">VS</div>
+                        <div class="vs-badge ${hasResults ? 'score-badge' : ''}">${scoreDisplay}</div>
                         <div class="team-info">
                             <div class="team-name">${match.team2.name}</div>
                             ${match.team2.class ? `<div class="team-class">${match.team2.class}</div>` : ''}
@@ -1084,7 +1266,7 @@
 
                 // Add navigation dot
                 const dot = document.createElement('div');
-                dot.className = `slide-dot ${index === 0 ? 'active' : ''}`;
+                dot.className = `slide-dot ${index === 0 ? 'active' : ''} ${specialClass}`;
                 dot.onclick = () => showSlide(index);
                 navContainer.appendChild(dot);
             });
